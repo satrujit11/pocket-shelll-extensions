@@ -1,0 +1,50 @@
+# Buttons backed by an inline bash script. The host and port are handed to the
+# script as $1 and $2, never put into its text, so they cannot inject commands.
+spec: pocketshell.ext/v0
+id: reachability
+name: Reachability
+description: "Check from this server whether a host answers a ping or accepts a connection on a port."
+icon: network
+category: network
+version: 1.0.0
+author: Pocket Shell
+docs: https://man7.org/linux/man-pages/man8/ping.8.html
+license: Apache-2.0
+
+detect:
+  binaries: [bash]
+
+permissions: [read-network]
+
+actions:
+  check:
+    label: Check a host
+    icon: search
+    style: primary
+    interpreter: bash
+    script: |
+      host=$1; port=$2
+      if [ -n "$port" ]; then
+        if timeout 5 bash -c 'exec 3<>/dev/tcp/"$0"/"$1"' "$host" "$port" 2>/dev/null; then
+          echo "$host:$port accepts connections"
+        else
+          echo "$host:$port is closed or unreachable"; exit 1
+        fi
+      else
+        ping -c 3 -W 2 "$host"
+      fi
+    args: ["{{ form.host }}", "{{ form.port }}"]
+    result: output
+    docs: https://man7.org/linux/man-pages/man8/ping.8.html
+    fields:
+      - { id: host, type: text, label: Host or address, required: true, pattern: '^[A-Za-z0-9._-]+$', help: "Letters, digits, dots and dashes" }
+      - { id: port, type: number, label: Port (leave empty to ping), min: 1, max: 65535 }
+
+screens:
+  main:
+    title: Reachability
+    actions: [check]
+    sections:
+      - components:
+          - type: text
+            value: "Check from this server whether another machine or service is reachable. Enter a host to ping it, or a host and a port to test a TCP connection."

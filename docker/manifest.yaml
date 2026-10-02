@@ -12,7 +12,7 @@ category: containers
 version: 1.0.0
 author: Pocket Shell
 docs: https://docs.docker.com/reference/cli/docker/
-logo: https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/docker/logo.svg
+logo: https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/docker/logo.svg
 license: Apache-2.0
 
 detect:

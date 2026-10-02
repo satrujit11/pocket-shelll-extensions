@@ -9,10 +9,10 @@
       "version": "1.0.0",
       "author": "Pocket Shell",
       "docs": "https://docs.docker.com/reference/cli/docker/",
-      "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/docker/logo.svg",
+      "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/docker/logo.svg",
       "readme": "docker/README.md",
       "path": "docker/manifest.yaml",
-      "sha256": "dedd7f82a55042c492ece70144fce2340e105c21bd4b156fc22f72e50eaf2143"
+      "sha256": "514814d481222bf2573de5993fd771567da062fbdb09352f326a7d52c9ab9fb8"
     },
     {
       "id": "kubernetes",
@@ -23,10 +23,10 @@
       "version": "1.0.0",
       "author": "Pocket Shell",
       "docs": "https://kubernetes.io/docs/reference/kubectl/",
-      "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/kubernetes/logo.svg",
+      "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/kubernetes/logo.svg",
       "readme": "kubernetes/README.md",
       "path": "kubernetes/manifest.yaml",
-      "sha256": "bcc1397a0dab7ceb794394a9f637c3533a7ed413c2c7f00fc9785d9037356883"
+      "sha256": "53c719435f957887d5201b30f209e18b6aa5d99ed03884eae132a403352962c2"
     },
     {
       "id": "nginx",
@@ -37,10 +37,10 @@
       "version": "1.0.0",
       "author": "Pocket Shell",
       "docs": "https://nginx.org/en/docs/",
-      "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/nginx/logo.svg",
+      "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/nginx/logo.svg",
       "readme": "nginx/README.md",
       "path": "nginx/manifest.yaml",
-      "sha256": "68c92595455f83609be559200699248391289826aea050b13443e2b7e4c7b840"
+      "sha256": "d1601529c4c163225ccdb11a3d2102dd250cfd05e0945419aa7558c03aaa9d54"
     },
     {
       "id": "pm2-lite",
@@ -51,10 +51,10 @@
       "version": "1.0.0",
       "author": "Pocket Shell",
       "docs": "https://pm2.keymetrics.io/docs/usage/quick-start/",
-      "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/pm2/logo.svg",
+      "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/pm2/logo.svg",
       "readme": "pm2/README.md",
       "path": "pm2/manifest.yaml",
-      "sha256": "2405091edcfcfb400aecd3d8204861714fb79eb735282eca98a8763106383ab1"
+      "sha256": "ad8116e66355cbfe4819284fa773f049d648082b6c08cdfb2549c42f1ca0801d"
     },
     {
       "id": "podman-lite",
@@ -65,10 +65,10 @@
       "version": "1.0.0",
       "author": "Pocket Shell",
       "docs": "https://docs.podman.io/en/latest/Commands.html",
-      "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/podman/logo.svg",
+      "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/podman/logo.svg",
       "readme": "podman/README.md",
       "path": "podman/manifest.yaml",
-      "sha256": "0ce02ea253cc819afc7063f0a732fa53b2fc782a1eba0c5d2a959dcbfcaac69f"
+      "sha256": "641ad2c5fef1470fcd28786a5298ba2a19c32a4d386b6b537d65f6201e7b37d3"
     },
     {
       "id": "redis",
@@ -79,10 +79,10 @@
       "version": "1.0.0",
       "author": "Pocket Shell",
       "docs": "https://redis.io/docs/latest/commands/info/",
-      "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/redis/logo.svg",
+      "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/redis/logo.svg",
       "readme": "redis/README.md",
       "path": "redis/manifest.yaml",
-      "sha256": "e11203a1ff577d869e466b97f3d8cbb8fc31af7eb8226f902e4ec07ec18a7ebe"
+      "sha256": "779023222d2fbfb51272340fd824e9cf66e10981045d6f984f6785e3a1c2760d"
     },
     {
       "id": "supervisor",
@@ -126,5 +126,5 @@
   ],
   "name": "Pocket Shell extensions",
   "spec": "pocketshell.registry/v0",
-  "updated": "2026-10-02T04:49:40Z"
+  "updated": "2026-10-02T04:59:28Z"
 }

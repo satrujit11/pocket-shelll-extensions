@@ -9,7 +9,7 @@ category: containers
 version: 1.0.0
 author: Pocket Shell
 docs: https://docs.podman.io/en/latest/Commands.html
-logo: https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/podman/logo.svg
+logo: https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/podman/logo.svg
 license: Apache-2.0
 
 detect:

@@ -1,0 +1,68 @@
+# A script-only extension: one inline shell script reads /proc and prints JSON,
+# the manifest says how to show it. No other program is needed.
+spec: pocketshell.ext/v0
+id: system
+name: System summary
+description: "Load, memory, swap and uptime of this server, from one inline script."
+icon: cpu
+category: system
+version: 1.0.0
+author: Pocket Shell
+docs: https://man7.org/linux/man-pages/man5/proc.5.html
+license: Apache-2.0
+
+detect:
+  binaries: [sh]
+
+permissions: [read-system]
+
+data:
+  summary:
+    interpreter: sh
+    script: |
+      host=$(hostname 2>/dev/null || echo server)
+      read l1 l5 l15 _ < /proc/loadavg
+      up=$(cut -d. -f1 /proc/uptime)
+      mt=$(awk '/^MemTotal/{print $2}' /proc/meminfo)
+      ma=$(awk '/^MemAvailable/{print $2}' /proc/meminfo)
+      st=$(awk '/^SwapTotal/{print $2}' /proc/meminfo)
+      sf=$(awk '/^SwapFree/{print $2}' /proc/meminfo)
+      cores=$(grep -c '^processor' /proc/cpuinfo)
+      printf '{"host":"%s","load1":%s,"load5":%s,"load15":%s,"uptime":%s,"mem_total":%s,"mem_avail":%s,"swap_total":%s,"swap_free":%s,"cores":%s}\n' \
+        "$host" "$l1" "$l5" "$l15" "$up" "$((mt*1024))" "$((ma*1024))" "$((st*1024))" "$((sf*1024))" "$cores"
+    parse: json
+    path: $
+    refresh: 5s
+
+screens:
+  main:
+    title: "{{ data.summary.host }}"
+    subtitle: "up {{ data.summary.uptime | duration() }}"
+    sections:
+      - layout: { columns: 3 }
+        components:
+          - type: stat
+            label: Load (1m)
+            value: "{{ data.summary.load1 }}"
+            detail: "of {{ data.summary.cores }} cores"
+            tone: "{{ data.summary.load1 > data.summary.cores ? 'danger' : 'success' }}"
+          - type: stat
+            label: Load (5m)
+            value: "{{ data.summary.load5 }}"
+          - type: stat
+            label: Load (15m)
+            value: "{{ data.summary.load15 }}"
+      - title: Memory
+        components:
+          - type: progress
+            label: "{{ (data.summary.mem_total - data.summary.mem_avail) | bytes() }} of {{ data.summary.mem_total | bytes() }} used"
+            value: "{{ ((data.summary.mem_total - data.summary.mem_avail) | percent(data.summary.mem_total)) }}"
+            max: 100
+            tone: "{{ ((data.summary.mem_total - data.summary.mem_avail) | percent(data.summary.mem_total)) > 90 ? 'danger' : 'success' }}"
+      - title: Swap
+        visible: "{{ data.summary.swap_total > 0 }}"
+        components:
+          - type: progress
+            label: "{{ (data.summary.swap_total - data.summary.swap_free) | bytes() }} of {{ data.summary.swap_total | bytes() }} used"
+            value: "{{ ((data.summary.swap_total - data.summary.swap_free) | percent(data.summary.swap_total)) }}"
+            max: 100

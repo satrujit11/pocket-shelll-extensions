@@ -9,7 +9,7 @@ category: web
 version: 1.0.0
 author: Pocket Shell
 docs: https://nginx.org/en/docs/
-logo: https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/nginx/logo.svg
+logo: https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/nginx/logo.svg
 license: Apache-2.0
 requires: [logs, table]
 

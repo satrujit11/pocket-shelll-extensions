@@ -25,6 +25,14 @@ Each folder is one extension and doubles as its wiki page:
 index.json        the list the app browses (checksums of every manifest)
 ```
 
+## Documentation
+
+- [Manifest standard](docs/manifest-spec.md): every field of `pocketshell.ext/v0`
+- [Building an extension](docs/building.md): get the tool, write one step by step, try it on a real tool
+- [Testing](docs/testing.md): fixtures with fake programs
+- [Publishing and signing](docs/publishing.md): the index, signing, what the app verifies
+- [Contributing](CONTRIBUTING.md): rules and the pull request checklist
+
 ## Using them
 
 In the app: open a server, **Extensions**, **+**, then pick one from the registry. Before anything is installed you see every command it can run. The app reads `index.json` from this repository; a private extension can instead be pasted in from the **Paste** tab or kept on the server.
@@ -34,7 +42,7 @@ In the app: open a server, **Extensions**, **+**, then pick one from the registr
 With the `pocket-shell-cli` tool (`ext` commands):
 
 ```sh
-pocket-shell-cli ext test */                      # validate every manifest and run every fixture
+pocket-shell-cli ext test .                       # validate every manifest and run every fixture
 pocket-shell-cli ext try redis main               # show a screen using the real tool on this machine
 pocket-shell-cli ext index . > index.json         # rebuild the index after any change
 ```
@@ -47,7 +55,7 @@ pocket-shell-cli ext index . > index.json         # rebuild the index after any 
 4. Add a `README.md` (what it shows, what it runs).
 5. Rebuild `index.json` and open a pull request.
 
-The standard is described in `docs/extensions-spec-v0.md` of the pocket-shell-cli repository.
+The standard is in [docs/manifest-spec.md](docs/manifest-spec.md); the full walkthrough is [docs/building.md](docs/building.md); the rules are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Ids
 

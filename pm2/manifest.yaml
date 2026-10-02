@@ -9,7 +9,7 @@ category: processes
 version: 1.0.0
 author: Pocket Shell
 docs: https://pm2.keymetrics.io/docs/usage/quick-start/
-logo: https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/pm2/logo.svg
+logo: https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/pm2/logo.svg
 license: Apache-2.0
 
 detect:
