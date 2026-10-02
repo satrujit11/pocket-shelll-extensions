@@ -401,13 +401,14 @@ manifest read well on a phone and are what the catalog follows.
    (Configuration, Status, Network, Mounts), not what the tool calls it.
 6. **Secrets are asked for.** Put them behind a `when` source and an `auth`
    toggle, and keep them out of `rest` with `exclude`.
-7. **Say what a button does and when.** Use `visible` so only the buttons that
+7. **Buttons are always on view.** A screen's `actions` are drawn as a row of buttons above its first tab (or its only page), never behind a menu, so list only the ones that matter and use `visible` to show the ones that fit the state. Buttons on a row (`item.actions`) go at the end of that row.
+8. **Say what a button does and when.** Use `visible` so only the buttons that
    fit the state appear; `confirm` for anything that interrupts; `type_to_confirm`
    for anything that deletes.
-8. **Several logs are streams of one component**, not separate pages.
-9. **Show an empty state**, with the way out (`empty`, or an `empty` component
+9. **Several logs are streams of one component**, not separate pages.
+10. **Show an empty state**, with the way out (`empty`, or an `empty` component
    with a button), and let errors explain themselves with `errors`.
-10. **Link the documentation** (`docs`) on the extension, its screens and its
+11. **Link the documentation** (`docs`) on the extension, its screens and its
     dangerous actions.
 
 ## 12. Compatibility
