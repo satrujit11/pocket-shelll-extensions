@@ -18,6 +18,14 @@ detect:
 
 permissions: [read-services, control-services, sudo]
 
+errors:
+  - match: "Failed to connect to bus|System has not been booted with systemd"
+    title: systemd is not available here
+    text: This server does not run systemd (a container, or another init system), so there are no units to show.
+  - match: "access denied|Interactive authentication required"
+    title: Not allowed to control services
+    text: Starting and stopping services needs root. Allow sudo for this user, then try again.
+
 data:
   units:
     run: [systemctl, list-units, --type=service, --all, --no-pager, --output=json]
@@ -32,7 +40,7 @@ data:
     refresh: 5s
   journal:
     params: [name]
-    run: [journalctl, -u, "{{ params.name }}", -n, "200", -f, --no-pager, --output=short-iso]
+    run: [journalctl, -u, "{{ params.name }}", -n, "{{ state.lines }}", -f, --no-pager, --output=short-iso]
     parse: lines
     stream: true
     privilege: sudo
@@ -78,73 +86,48 @@ screens:
   main:
     title: Services
     subtitle: "{{ data.units | count() }} units"
+    docs: https://www.freedesktop.org/software/systemd/man/latest/systemctl.html
     actions: [reload-daemon]
-    tabs:
-      - id: overview
-        title: Overview
-        sections:
-          - layout: { columns: 3 }
-            components:
-              - type: stat
-                label: Running
-                value: "{{ data.units | where(row.sub == 'running') | count() }}"
-                tone: success
-              - type: stat
-                label: Failed
-                value: "{{ data.units | where(row.active == 'failed') | count() }}"
-                tone: danger
-              - type: stat
-                label: Stopped
-                value: "{{ data.units | where(row.sub == 'dead') | count() }}"
-                tone: muted
-          - title: Needs attention
-            visible: "{{ data.units | where(row.active == 'failed') | count() > 0 }}"
-            components:
-              - type: list
-                from: units
-                where: "{{ row.active == 'failed' }}"
-                sort: unit
-                item:
-                  title: "{{ row.unit }}"
-                  subtitle: "{{ row.description }}"
-                  badge: failed
-                  tone: danger
-                on_tap: { screen: detail, params: { name: "{{ row.unit }}" } }
-      - id: running
-        title: Running
-        badge: "{{ data.units | where(row.sub == 'running') | count() }}"
-        sections:
-          - components:
-              - type: list
-                from: units
-                where: "{{ row.sub == 'running' }}"
-                search: true
-                sort: unit
-                empty: Nothing is running.
-                item:
-                  title: "{{ row.unit }}"
-                  subtitle: "{{ row.description }}"
-                  trailing: "{{ row.sub }}"
-                  tone: success
-                on_tap: { screen: detail, params: { name: "{{ row.unit }}" } }
-      - id: all
-        title: All
-        sections:
-          - components:
-              - type: table
-                from: units
-                search: true
-                columns:
-                  - { title: Unit, value: "{{ row.unit }}" }
-                  - { title: State, value: "{{ row.active }}" }
-                  - { title: Sub, value: "{{ row.sub }}" }
-                on_tap: { screen: detail, params: { name: "{{ row.unit }}" } }
+    sections:
+      - layout: { columns: 3 }
+        components:
+          - type: stat
+            label: Running
+            value: "{{ data.units | where(row.sub == 'running') | count() }}"
+            tone: success
+          - type: stat
+            label: Failed
+            value: "{{ data.units | where(row.active == 'failed') | count() }}"
+            tone: danger
+          - type: stat
+            label: Stopped
+            value: "{{ data.units | where(row.sub == 'dead') | count() }}"
+            tone: muted
+      - components:
+          - type: list
+            from: units
+            search: true
+            sort: unit
+            empty: There are no services.
+            filters:
+              - { id: failed, label: Failed, where: "{{ row.active == 'failed' }}" }
+              - { id: running, label: Running, where: "{{ row.sub == 'running' }}" }
+              - { id: stopped, label: Stopped, where: "{{ row.sub == 'dead' }}" }
+            item:
+              title: "{{ row.unit }}"
+              subtitle: "{{ row.description }}"
+              trailing: "{{ row.sub }}"
+              tone: "{{ row.active == 'failed' ? 'danger' : (row.sub == 'running' ? 'success' : 'muted') }}"
+            on_tap: { screen: detail, params: { name: "{{ row.unit }}" } }
 
   detail:
     params: [name]
+    docs: https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html
     title: "{{ params.name }}"
     subtitle: "{{ data.unit.Description }}"
     actions: [start, stop, restart]
+    state:
+      lines: { type: number, label: Lines, options: [100, 200, 500, 1000], default: 200 }
     tabs:
       - id: status
         title: Status
@@ -165,15 +148,19 @@ screens:
               - type: stat
                 label: Since
                 value: "{{ data.unit.ActiveEnterTimestamp | ago() }}"
-          - title: Details
-            collapsible: true
-            components:
-              - type: keyvalue
-                items:
-                  - { label: Main PID, value: "{{ data.unit.MainPID }}", copy: true }
-                  - { label: Unit file, value: "{{ data.unit.FragmentPath }}", copy: true }
-                  - { label: Starts at boot, value: "{{ data.unit.UnitFileState }}" }
-                  - { label: Restart policy, value: "{{ data.unit.Restart }}" }
+          - components:
+              - type: properties
+                value: "{{ data.unit }}"
+                groups:
+                  - title: Service
+                    fields:
+                      - { label: Main PID, path: MainPID, copy: true }
+                      - { label: Unit file, path: FragmentPath, copy: true, mono: true }
+                      - { label: Starts at boot, path: UnitFileState, hide_empty: true }
+                      - { label: Restart policy, path: Restart, hide_empty: true }
+                      - { label: Runs as, path: User, hide_empty: true }
+                      - { label: Working dir, path: WorkingDirectory, hide_empty: true, mono: true }
+                      - { label: Command, path: ExecStart, hide_empty: true, mono: true }
       - id: logs
         title: Logs
         sections:
@@ -182,3 +169,7 @@ screens:
                 from: journal
                 follow: true
                 search: true
+                controls: [lines]
+                levels:
+                  - { match: "error|fail|fatal|panic", level: error }
+                  - { match: "warn", level: warn }

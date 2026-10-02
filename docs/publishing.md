@@ -16,14 +16,11 @@ pocket-shell-cli ext index . > index.json
 
 ## Signing (maintainers)
 
-Signing lets the app label an entry **Verified** (the manifest is exactly what the registry's key signed).
+Signing lets the app label an entry **Verified**. How the keys work, how to sign, and how to run your own registry: [signing.md](signing.md). In short, from the Pocket Shell app repository:
 
 ```sh
-pocket-shell-cli ext keygen registry.key              # once; prints the public key; keep registry.key private
-pocket-shell-cli ext index . --key registry.key > index.json
+tool/sign_registry.sh ../pocket-shelll-extensions ../pocket-shell-cli
 ```
-
-The private key is never committed (`*.key` is in `.gitignore`). The public key is set as `registryPublicKey` in the Pocket Shell app (`lib/modules/agent/extension_registry.dart`). Until it is set, entries show as "From a registry, not signed" and still install.
 
 ## What the app and agent check
 
@@ -41,5 +38,5 @@ Nothing in a manifest refers to where the catalog is hosted except `logo:` links
 ## Releasing
 
 1. Merge pull requests that pass `ext test`.
-2. Rebuild and (maintainers) sign `index.json` in the same commit as the manifest changes.
+2. Rebuild and sign `index.json` (see signing.md) in the same commit as the manifest changes.
 3. Bump an extension's `version` when its behaviour changes.

@@ -19,6 +19,11 @@ detect:
 
 permissions: [read-config, read-logs, control-services, sudo]
 
+errors:
+  - match: "Permission denied"
+    title: Nginx logs need root
+    text: The log and configuration files belong to root. The commands that read them already ask for sudo, so allow it for this user in sudoers.
+
 data:
   status:
     run: [systemctl, is-active, nginx]
@@ -82,6 +87,7 @@ screens:
   main:
     title: Nginx
     subtitle: "{{ data.status.text | trim() }}"
+    docs: https://nginx.org/en/docs/beginners_guide.html
     actions: [test, reload, restart]
     tabs:
       - id: overview
@@ -100,38 +106,36 @@ screens:
                 label: Config
                 value: "{{ data.configtest.text | contains('successful') ? 'OK' : 'Problem' }}"
                 tone: "{{ data.configtest.text | contains('successful') ? 'success' : 'warning' }}"
-          - title: Configuration test
+          - title: Enabled sites
             components:
-              - type: code
-                value: "{{ data.configtest.text | trim() }}"
-      - id: sites
-        title: Sites
-        badge: "{{ data.sites | count() }}"
-        sections:
-          - components:
               - type: list
                 from: sites
+                search: true
                 sort: line
                 empty: No sites are enabled.
                 item:
                   title: "{{ row.line }}"
-                on_tap: { screen: site, params: { name: "{{ row.line }}" } }
+                on_tap: { screen: site, as: sheet, params: { name: "{{ row.line }}" } }
+          - title: Configuration test
+            collapsible: true
+            components:
+              - type: code
+                value: "{{ data.configtest.text | trim() }}"
       - id: logs
         title: Logs
         sections:
-          - title: Errors
-            components:
+          - components:
               - type: logs
-                from: errors
                 follow: true
                 search: true
-          - title: Access
-            collapsible: true
-            components:
-              - type: logs
-                from: access
-                follow: true
-                search: true
+                streams:
+                  - { id: errors, label: Errors, from: errors, tone: danger }
+                  - { id: access, label: Access, from: access }
+                levels:
+                  - { match: "\\[(error|crit|alert|emerg)\\]", level: error }
+                  - { match: "\\[warn\\]", level: warn }
+                  - { match: "\" (5[0-9][0-9]) ", level: error }
+                  - { match: "\" (4[0-9][0-9]) ", level: warn }
 
   site:
     params: [name]

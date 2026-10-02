@@ -42,3 +42,7 @@ checks:
     confirmed: true
     confirm_text: web-1
     ran: ["kubectl delete pod web-1 -n prod"]
+  - name: the pod shows its containers and keeps the rest
+    screen: pod
+    params: { ns: default, name: web }
+    contains: ['Everything else', 'Pull policy']

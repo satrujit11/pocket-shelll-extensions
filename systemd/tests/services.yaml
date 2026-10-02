@@ -38,3 +38,7 @@ checks:
     confirmed: true
     confirm_text: nginx.service
     ran: ["sudo -n -- systemctl stop nginx.service"]
+  - name: one page with chips
+    screen: main
+    contains: ['"filters"', 'Failed', 'Stopped', 'bad.service']
+    not_contains: ['Needs attention']

@@ -22,6 +22,15 @@ data:
     parse: keyvalue
     refresh: 5s
     timeout: 5s
+    history: 40
+
+errors:
+  - match: "Could not connect|Connection refused"
+    title: Redis is not reachable
+    text: redis-cli could not connect to localhost:6379. Start Redis, or open this server as the user whose redis-cli is set up for it.
+  - match: "NOAUTH|WRONGPASS"
+    title: Redis wants a password
+    text: This extension runs redis-cli without a password. Put the password in ~/.rediscli_auth or REDISCLI_AUTH for this user.
 
 actions:
   save:
@@ -34,31 +43,54 @@ screens:
   main:
     title: Redis
     subtitle: "{{ data.info.redis_version }}"
+    docs: https://redis.io/docs/latest/commands/info/
     actions: [save]
-    tabs:
-      - id: overview
-        title: Overview
-        sections:
-          - layout: { columns: 2 }
-            components:
-              - type: stat
-                label: Uptime
-                value: "{{ data.info.uptime_in_seconds | duration() }}"
-              - type: stat
-                label: Clients
-                value: "{{ data.info.connected_clients }}"
-              - type: stat
-                label: Memory
-                value: "{{ data.info.used_memory | bytes() }}"
-              - type: stat
-                label: Commands/sec
-                value: "{{ data.info.instantaneous_ops_per_sec }}"
-          - title: Details
-            collapsible: true
-            components:
-              - type: keyvalue
-                items:
-                  - { label: Role, value: "{{ data.info.role }}" }
-                  - { label: Total commands, value: "{{ data.info.total_commands_processed }}" }
-                  - { label: Peak memory, value: "{{ data.info.used_memory_peak_human }}" }
-                  - { label: Keys (db0), value: "{{ data.info.db0 | default('no keys') }}" }
+    sections:
+      - layout: { columns: 2 }
+        components:
+          - type: stat
+            label: Uptime
+            value: "{{ data.info.uptime_in_seconds | duration() }}"
+          - type: stat
+            label: Clients
+            value: "{{ data.info.connected_clients }}"
+          - type: stat
+            label: Memory
+            value: "{{ data.info.used_memory | bytes() }}"
+          - type: stat
+            label: Commands/sec
+            value: "{{ data.info.instantaneous_ops_per_sec }}"
+      - components:
+          - type: properties
+            value: "{{ data.info }}"
+            rest: tree
+            rest_title: Every INFO field
+            groups:
+              - title: Server
+                fields:
+                  - { label: Version, path: redis_version }
+                  - { label: Mode, path: redis_mode, hide_empty: true }
+                  - { label: Role, path: role }
+                  - { label: Port, path: tcp_port, hide_empty: true }
+                  - { label: OS, path: os, hide_empty: true }
+              - title: Memory
+                fields:
+                  - { label: Used, path: used_memory, format: bytes }
+                  - { label: Peak, path: used_memory_peak, format: bytes, hide_empty: true }
+                  - { label: Limit, path: maxmemory, format: bytes, hide_empty: true }
+                  - { label: Fragmentation, path: mem_fragmentation_ratio, hide_empty: true }
+              - title: Traffic
+                fields:
+                  - { label: Total commands, path: total_commands_processed }
+                  - { label: Connections received, path: total_connections_received }
+                  - { label: Rejected connections, path: rejected_connections, hide_empty: true }
+                  - { label: Expired keys, path: expired_keys, hide_empty: true }
+                  - { label: Evicted keys, path: evicted_keys, hide_empty: true }
+              - title: Persistence
+                fields:
+                  - { label: Last save, path: rdb_last_save_time, format: ago, hide_empty: true }
+                  - { label: Last save status, path: rdb_last_bgsave_status, hide_empty: true }
+                  - { label: Changes since save, path: rdb_changes_since_last_save, hide_empty: true }
+              - title: Keys
+                fields:
+                  - { label: db0, path: db0, hide_empty: true, empty: no keys }

@@ -21,3 +21,6 @@ checks:
     confirmed: true
     ran: ["redis-cli bgsave"]
     output: ['Background saving started']
+  - name: the INFO fields are classified and the rest is kept
+    screen: main
+    contains: ['Server', 'Memory', 'Traffic', 'Every INFO field']

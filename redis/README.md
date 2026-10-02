@@ -15,7 +15,7 @@ Server status, memory, clients and keys of a local Redis.
 
 ## What you see
 
-- **main** - Redis (tabs: Overview)
+- **main** - Redis
 
 ## Buttons
 

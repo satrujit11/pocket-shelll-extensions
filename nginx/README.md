@@ -15,7 +15,7 @@ Web server status, enabled sites, config test, logs, reload and restart.
 
 ## What you see
 
-- **main** - Nginx (tabs: Overview, Sites, Logs)
+- **main** - Nginx (tabs: Overview, Logs)
 - **site**
 
 ## Buttons

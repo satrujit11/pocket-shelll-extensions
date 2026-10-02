@@ -26,3 +26,7 @@ checks:
     params: { name: web }
     confirmed: true
     ran: ["sudo -n -- supervisorctl restart web"]
+  - name: output and errors are two streams of one log
+    screen: detail
+    params: { name: web }
+    contains: ['"streams"', 'Errors']

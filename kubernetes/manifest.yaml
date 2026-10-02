@@ -16,6 +16,14 @@ detect:
 
 permissions: [read-cluster, control-cluster]
 
+errors:
+  - match: "connection refused|Unable to connect to the server"
+    title: kubectl cannot reach the cluster
+    text: Check the kubeconfig of this user (KUBECONFIG, or ~/.kube/config) and that the API server is up.
+  - match: "Forbidden|forbidden"
+    title: This account may not do that
+    text: The cluster's RBAC rules refuse it. Ask the cluster admin for access, or use another kubeconfig.
+
 data:
   pods:
     run: [kubectl, get, pods, -A, -o, json]
@@ -38,7 +46,7 @@ data:
     timeout: 15s
   logs:
     params: [ns, name]
-    run: [kubectl, logs, "{{ params.name }}", -n, "{{ params.ns }}", --tail, "200", -f]
+    run: [kubectl, logs, "{{ params.name }}", -n, "{{ params.ns }}", --tail, "{{ state.lines }}", -f]
     parse: lines
     stream: true
     merge_stderr: true
@@ -58,9 +66,11 @@ screens:
   main:
     title: Kubernetes
     subtitle: "{{ data.pods | count() }} pods"
+    docs: https://kubernetes.io/docs/reference/kubectl/
     tabs:
-      - id: overview
-        title: Overview
+      - id: pods
+        title: Pods
+        badge: "{{ data.pods | count() }}"
         sections:
           - layout: { columns: 3 }
             components:
@@ -76,15 +86,16 @@ screens:
                 label: Failed
                 value: "{{ data.pods | where(row.status.phase == 'Failed') | count() }}"
                 tone: danger
-      - id: pods
-        title: Pods
-        badge: "{{ data.pods | count() }}"
-        sections:
           - components:
               - type: list
                 from: pods
                 search: true
                 group_by: metadata.namespace
+                empty: There are no pods.
+                filters:
+                  - { id: running, label: Running, where: "{{ row.status.phase == 'Running' }}" }
+                  - { id: pending, label: Pending, where: "{{ row.status.phase == 'Pending' }}" }
+                  - { id: failed, label: Failed, where: "{{ row.status.phase == 'Failed' }}" }
                 item:
                   title: "{{ row.metadata.name }}"
                   subtitle: "{{ row.metadata.namespace }}"
@@ -93,20 +104,26 @@ screens:
                 on_tap: { screen: pod, params: { ns: "{{ row.metadata.namespace }}", name: "{{ row.metadata.name }}" } }
       - id: nodes
         title: Nodes
+        badge: "{{ data.nodes | count() }}"
         sections:
           - components:
               - type: list
                 from: nodes
+                empty: There are no nodes.
                 item:
                   title: "{{ row.metadata.name }}"
                   subtitle: "{{ row.status.nodeInfo.kubeletVersion }}"
                   trailing: "{{ (row.status.conditions | where(row.type == 'Ready') | first()).status == 'True' ? 'Ready' : 'Not ready' }}"
                   tone: "{{ (row.status.conditions | where(row.type == 'Ready') | first()).status == 'True' ? 'success' : 'danger' }}"
+
   pod:
     params: [ns, name]
+    docs: https://kubernetes.io/docs/concepts/workloads/pods/
     title: "{{ params.name }}"
     subtitle: "{{ params.ns }}"
     actions: [delete-pod]
+    state:
+      lines: { type: number, label: Lines, options: [100, 200, 500, 1000], default: 200 }
     tabs:
       - id: status
         title: Status
@@ -126,13 +143,31 @@ screens:
               - type: stat
                 label: Node
                 value: "{{ data.pod.spec.nodeName }}"
-          - title: Details
-            collapsible: true
-            components:
-              - type: keyvalue
-                items:
-                  - { label: Image, value: "{{ data.pod.spec.containers[0].image }}" }
-                  - { label: Pod IP, value: "{{ data.pod.status.podIP }}", copy: true }
+          - components:
+              - type: properties
+                value: "{{ data.pod }}"
+                rest: tree
+                rest_title: Everything else (the full object)
+                exclude: [spec.containers]
+                groups:
+                  - title: Pod
+                    fields:
+                      - { label: Namespace, path: metadata.namespace }
+                      - { label: Pod IP, path: status.podIP, copy: true }
+                      - { label: Host IP, path: status.hostIP, copy: true }
+                      - { label: Service account, path: spec.serviceAccountName, hide_empty: true }
+                      - { label: QoS, path: status.qosClass, hide_empty: true }
+                      - { label: Created, path: metadata.creationTimestamp, format: ago }
+                  - title: "{{ row.name }}"
+                    each: "{{ data.pod.spec.containers }}"
+                    fields:
+                      - { label: Image, value: "{{ row.image }}", copy: true }
+                      - { label: Pull policy, value: "{{ row.imagePullPolicy }}" }
+                      - { label: Command, value: "{{ row.command | join(' ') }}", mono: true }
+                  - title: Labels
+                    collapsible: true
+                    fields:
+                      - { label: Labels, path: metadata.labels, format: json, hide_empty: true, mono: true }
       - id: logs
         title: Logs
         sections:
@@ -141,3 +176,7 @@ screens:
                 from: logs
                 follow: true
                 search: true
+                controls: [lines]
+                levels:
+                  - { match: "error|fatal|panic|exception", level: error }
+                  - { match: "warn", level: warn }

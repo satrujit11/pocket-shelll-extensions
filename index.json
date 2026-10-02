@@ -12,7 +12,8 @@
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/docker/logo.svg",
       "readme": "docker/README.md",
       "path": "docker/manifest.yaml",
-      "sha256": "5bdb7d14bf766ae77cdd110f722ea5b124a3bef855cae85889d3b5e9acc1d4ce"
+      "sha256": "5bdb7d14bf766ae77cdd110f722ea5b124a3bef855cae85889d3b5e9acc1d4ce",
+      "signature": "TIILVUFI8V7NGHlSOs9HcEgrG8FjZh/5xUIFXha6NfOgLAbnyBm8U/UmYvi3F7aqvoWhVJMl6pH95A1sUbvBBQ=="
     },
     {
       "id": "kubernetes",
@@ -26,7 +27,8 @@
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/kubernetes/logo.svg",
       "readme": "kubernetes/README.md",
       "path": "kubernetes/manifest.yaml",
-      "sha256": "53c719435f957887d5201b30f209e18b6aa5d99ed03884eae132a403352962c2"
+      "sha256": "7d13d7b8a610d116fe677af576ecc1dfd44cbc0a063fe883fe1caf63644118a9",
+      "signature": "wucRthHSo4J7O4LgfpDMIebWLVjPKp6ABKBSqDH4UcenKW5P1zQph3Iw9nmVoms+bl0NU299u4Lfu725YAiBCw=="
     },
     {
       "id": "nginx",
@@ -40,7 +42,8 @@
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/nginx/logo.svg",
       "readme": "nginx/README.md",
       "path": "nginx/manifest.yaml",
-      "sha256": "d1601529c4c163225ccdb11a3d2102dd250cfd05e0945419aa7558c03aaa9d54"
+      "sha256": "5191bd70954ebc6feaa4623252ca5401af10cab26ba26e9ac279afb5909f3c7f",
+      "signature": "9x3Jo5oTwZkZSiVyeMGAskhkc4TGa/RlfKhTpC00BjEoOELcc8TJjoHQqIifEYln5i8j8dSU/Uox9GG/xoHRAA=="
     },
     {
       "id": "pm2",
@@ -54,7 +57,8 @@
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/pm2/logo.svg",
       "readme": "pm2/README.md",
       "path": "pm2/manifest.yaml",
-      "sha256": "0a22678af546093d6b6e841f3cae4ff51f521b660ce71de7cae383aef1981510"
+      "sha256": "0a22678af546093d6b6e841f3cae4ff51f521b660ce71de7cae383aef1981510",
+      "signature": "NbJ6KNjsIf/Gs7lK92qxp/k7o2YJ5XoXMjZ1GRY9lm9FwcbHchNrbsddcwJ8yrsZkpDVq2Zsp2EPv1z1UbjUDw=="
     },
     {
       "id": "podman",
@@ -68,7 +72,8 @@
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/podman/logo.svg",
       "readme": "podman/README.md",
       "path": "podman/manifest.yaml",
-      "sha256": "ad2b5382ad956998558daa8ebef59d85b2064a594b890c9c3adbf0a80917477b"
+      "sha256": "ad2b5382ad956998558daa8ebef59d85b2064a594b890c9c3adbf0a80917477b",
+      "signature": "K3Z5C5b6wG0oNDTFGUrnfu0hSzZnQCq8T46mCIRhI6dyEBkwklb8o1Wv0R2cY5uWtb3q8r+2EZUHGcuU/7C0CQ=="
     },
     {
       "id": "redis",
@@ -82,7 +87,8 @@
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/redis/logo.svg",
       "readme": "redis/README.md",
       "path": "redis/manifest.yaml",
-      "sha256": "779023222d2fbfb51272340fd824e9cf66e10981045d6f984f6785e3a1c2760d"
+      "sha256": "093de959ae7bd13c45b8f23b42aff6bd08c52fbbbaaea129dbb5a13ed0d1908c",
+      "signature": "l3x7kGdybp70zyROGqCiTVuw44ZxZ7qskum3l/3ynQljhLn3PQ7UjhC3tsD7F33ELoL4wKm5OgyWHkyo8dAGAw=="
     },
     {
       "id": "supervisor",
@@ -95,7 +101,8 @@
       "docs": "http://supervisord.org/running.html#supervisorctl-command-line-options",
       "readme": "supervisor/README.md",
       "path": "supervisor/manifest.yaml",
-      "sha256": "d522f0ad81cb4de8d537a68ea10c6c417b3e7e2bad903050a31a903642dcd7a4"
+      "sha256": "563ad8d730f4e5e7ad4da0038a63a4dd9203b30801f4bf469b152dcd2a69d724",
+      "signature": "rzD5KVdII7/aRaEr/V7ynrrimTln9mtGH96cnBRpEK6uLcqQeSwQFg7q/naaTxQnWM15zfsG1G4XppA51C9YCg=="
     },
     {
       "id": "systemd",
@@ -108,7 +115,8 @@
       "docs": "https://www.freedesktop.org/software/systemd/man/latest/systemctl.html",
       "readme": "systemd/README.md",
       "path": "systemd/manifest.yaml",
-      "sha256": "0bcd5bb17643ca6e9023b42bcf4caf68779406a86f6f0890de7b26b404e02b8f"
+      "sha256": "3454754dee89ccbdc00318dba19697972583a520d5937c5aff30fa551c68ce16",
+      "signature": "4UB7iQFLEkNGhymIG09Ub8Xs9yf8zBvobfiN/aeV7Nk3X/Q8h0FbzWWX0JMm+IK0mgNN6J0+T+QD1WpVDvZoBQ=="
     },
     {
       "id": "ufw",
@@ -121,10 +129,11 @@
       "docs": "https://manpages.ubuntu.com/manpages/noble/en/man8/ufw.8.html",
       "readme": "ufw/README.md",
       "path": "ufw/manifest.yaml",
-      "sha256": "9fe83f601d1522c86e0767b60bb9addfe10f2789c141a07e37aa0f05e7ccf932"
+      "sha256": "9fe83f601d1522c86e0767b60bb9addfe10f2789c141a07e37aa0f05e7ccf932",
+      "signature": "+P7GrAwEfwGCiNrt/w4CT5J4Weq7i4fQ8r8X2J+J14aXz5bw4HyzFZFkviPFK+6bAvbStQT7OIDoBfUyla5KCA=="
     }
   ],
   "name": "Pocket Shell extensions",
   "spec": "pocketshell.registry/v0",
-  "updated": "2026-10-02T05:37:17Z"
+  "updated": "2026-10-02T05:46:27Z"
 }

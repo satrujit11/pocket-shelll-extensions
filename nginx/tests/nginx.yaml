@@ -34,3 +34,6 @@ checks:
     screen: main
     refused: confirmed
     ran: ["systemctl restart"]
+  - name: errors and access are streams of one log; a site opens as a sheet
+    screen: main
+    contains: ['"streams"', 'Access', '"as":"sheet"']

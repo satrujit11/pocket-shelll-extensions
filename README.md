@@ -30,7 +30,7 @@ index.json        the list the app browses (checksums of every manifest)
 - [Manifest standard](docs/manifest-spec.md): every field of `pocketshell.ext/v0`
 - [Building an extension](docs/building.md): get the tool, write one step by step, try it on a real tool
 - [Testing](docs/testing.md): fixtures with fake programs
-- [Publishing and signing](docs/publishing.md): the index, signing, what the app verifies
+- [Publishing](docs/publishing.md) and [Signing](docs/signing.md): the index, the signing key, what the app verifies
 - [Contributing](CONTRIBUTING.md): rules and the pull request checklist
 
 ## Using them

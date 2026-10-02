@@ -15,7 +15,7 @@ systemd services: what runs, what failed, logs, start, stop and restart.
 
 ## What you see
 
-- **main** - Services (tabs: Overview, Running, All)
+- **main** - Services
 - **detail** (tabs: Status, Logs)
 
 ## Buttons
@@ -37,7 +37,7 @@ Listed last because they are the fine print: the agent on the server runs all of
 |---|---|---|
 | `data.units` | `systemctl list-units --type=service --all --no-pager --output=json` | user |
 | `data.unit` | `systemctl show {{ params.name }} --no-pager` | user |
-| `data.journal` | `journalctl -u {{ params.name }} -n 200 -f --no-pager --output=short-iso` (live) | sudo |
+| `data.journal` | `journalctl -u {{ params.name }} -n {{ state.lines }} -f --no-pager --output=short-iso` (live) | sudo |
 
 **Changes**
 

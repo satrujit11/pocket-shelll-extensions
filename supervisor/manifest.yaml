@@ -14,6 +14,14 @@ detect:
 
 permissions: [read-processes, control-processes, sudo]
 
+errors:
+  - match: "refused connection|no such file|sock"
+    title: Supervisor is not running
+    text: supervisorctl cannot reach supervisord. Start it (for example systemctl start supervisor) and open this again.
+  - match: "Permission denied|permission denied"
+    title: Supervisor needs root
+    text: The control socket belongs to root. The commands already run through sudo; allow it for this user.
+
 data:
   programs:
     run: [supervisorctl, status]
@@ -31,6 +39,12 @@ data:
   logs:
     params: [name]
     run: [supervisorctl, tail, "{{ params.name }}"]
+    parse: lines
+    refresh: 5s
+    privilege: sudo
+  errlogs:
+    params: [name]
+    run: [supervisorctl, tail, "{{ params.name }}", stderr]
     parse: lines
     refresh: 5s
     privilege: sudo
@@ -62,57 +76,59 @@ screens:
   main:
     title: Supervisor
     subtitle: "{{ data.programs | count() }} programs"
-    tabs:
-      - id: overview
-        title: Overview
-        sections:
-          - layout: { columns: 3 }
-            components:
-              - type: stat
-                label: Running
-                value: "{{ data.programs | where(row.state == 'RUNNING') | count() }}"
-                tone: success
-              - type: stat
-                label: Stopped
-                value: "{{ data.programs | where(row.state == 'STOPPED' || row.state == 'EXITED') | count() }}"
-                tone: muted
-              - type: stat
-                label: Failing
-                value: "{{ data.programs | where(row.state == 'FATAL' || row.state == 'BACKOFF') | count() }}"
-                tone: danger
-      - id: programs
-        title: Programs
-        sections:
-          - components:
-              - type: list
-                from: programs
-                search: true
-                sort: name
-                empty: Supervisor has no programs.
-                item:
-                  title: "{{ row.name }}"
-                  subtitle: "{{ row.detail }}"
-                  trailing: "{{ row.state }}"
-                  tone: "{{ row.state == 'RUNNING' ? 'success' : (row.state == 'FATAL' || row.state == 'BACKOFF' ? 'danger' : 'muted') }}"
-                on_tap: { screen: detail, params: { name: "{{ row.name }}" } }
+    docs: http://supervisord.org/running.html#supervisorctl-command-line-options
+    sections:
+      - layout: { columns: 3 }
+        components:
+          - type: stat
+            label: Running
+            value: "{{ data.programs | where(row.state == 'RUNNING') | count() }}"
+            tone: success
+          - type: stat
+            label: Stopped
+            value: "{{ data.programs | where(row.state == 'STOPPED' || row.state == 'EXITED') | count() }}"
+            tone: muted
+          - type: stat
+            label: Failing
+            value: "{{ data.programs | where(row.state == 'FATAL' || row.state == 'BACKOFF') | count() }}"
+            tone: danger
+      - components:
+          - type: list
+            from: programs
+            search: true
+            sort: name
+            empty: Supervisor has no programs.
+            filters:
+              - { id: running, label: Running, where: "{{ row.state == 'RUNNING' }}" }
+              - { id: failing, label: Failing, where: "{{ row.state == 'FATAL' || row.state == 'BACKOFF' }}" }
+              - { id: stopped, label: Stopped, where: "{{ row.state == 'STOPPED' || row.state == 'EXITED' }}" }
+            item:
+              title: "{{ row.name }}"
+              subtitle: "{{ row.detail }}"
+              trailing: "{{ row.state }}"
+              tone: "{{ row.state == 'RUNNING' ? 'success' : (row.state == 'FATAL' || row.state == 'BACKOFF' ? 'danger' : 'muted') }}"
+            on_tap: { screen: detail, params: { name: "{{ row.name }}" } }
+
   detail:
     params: [name]
+    docs: http://supervisord.org/running.html
     title: "{{ params.name }}"
     subtitle: "{{ (data.program | first()).state }}"
     actions: [start, stop, restart]
-    tabs:
-      - id: status
-        title: Status
-        sections:
-          - components:
-              - type: stat
-                label: State
-                value: "{{ (data.program | first()).state }}"
-                detail: "{{ (data.program | first()).detail }}"
-      - id: logs
-        title: Output
-        sections:
-          - components:
-              - type: logs
-                from: logs
-                search: true
+    sections:
+      - components:
+          - type: stat
+            label: State
+            value: "{{ (data.program | first()).state }}"
+            detail: "{{ (data.program | first()).detail }}"
+            tone: "{{ (data.program | first()).state == 'RUNNING' ? 'success' : 'danger' }}"
+      - title: Output
+        components:
+          - type: logs
+            search: true
+            streams:
+              - { id: out, label: Output, from: logs }
+              - { id: err, label: Errors, from: errlogs, tone: danger }
+            levels:
+              - { match: "error|fatal|exception|traceback", level: error }
+              - { match: "warn", level: warn }

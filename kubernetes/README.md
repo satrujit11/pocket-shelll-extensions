@@ -15,7 +15,7 @@ Pods and nodes through kubectl: status, live logs, delete a pod.
 
 ## What you see
 
-- **main** - Kubernetes (tabs: Overview, Pods, Nodes)
+- **main** - Kubernetes (tabs: Pods, Nodes)
 - **pod** (tabs: Status, Logs)
 
 ## Buttons
@@ -35,7 +35,7 @@ Listed last because they are the fine print: the agent on the server runs all of
 | `data.pods` | `kubectl get pods -A -o json` | user |
 | `data.nodes` | `kubectl get nodes -o json` | user |
 | `data.pod` | `kubectl get pod {{ params.name }} -n {{ params.ns }} -o json` | user |
-| `data.logs` | `kubectl logs {{ params.name }} -n {{ params.ns }} --tail 200 -f` (live) | user |
+| `data.logs` | `kubectl logs {{ params.name }} -n {{ params.ns }} --tail {{ state.lines }} -f` (live) | user |
 
 **Changes**
 

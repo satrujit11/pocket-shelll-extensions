@@ -15,8 +15,8 @@ Programs managed by supervisord: state, start, stop, restart.
 
 ## What you see
 
-- **main** - Supervisor (tabs: Overview, Programs)
-- **detail** (tabs: Status, Output)
+- **main** - Supervisor
+- **detail**
 
 ## Buttons
 
@@ -37,6 +37,7 @@ Listed last because they are the fine print: the agent on the server runs all of
 | `data.programs` | `supervisorctl status` | sudo |
 | `data.program` | `supervisorctl status {{ params.name }}` | sudo |
 | `data.logs` | `supervisorctl tail {{ params.name }}` | sudo |
+| `data.errlogs` | `supervisorctl tail {{ params.name }} stderr` | sudo |
 
 **Changes**
 
