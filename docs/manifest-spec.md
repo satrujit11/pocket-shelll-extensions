@@ -401,7 +401,7 @@ manifest read well on a phone and are what the catalog follows.
    (Configuration, Status, Network, Mounts), not what the tool calls it.
 6. **Secrets are asked for.** Put them behind a `when` source and an `auth`
    toggle, and keep them out of `rest` with `exclude`.
-7. **One Actions button.** A screen's `actions` are drawn as one full-width **Actions** button above its first tab (or its only page); it opens the list of them, dangerous ones in red. A screen with a single action shows that action as the button. List only the ones that matter and use `visible` to show the ones that fit the state. Buttons on a row (`item.actions`) go at the end of that row.
+7. **Actions sit where the app expects them.** A screen without `params` (a listing: containers, processes) puts its `actions` in the app bar: one or two as icons, more behind the three dots. A screen with `params` (one container, one process) shows them as one full-width **Actions** button above its first tab; it opens the list of them, dangerous ones in red, and a single action shows as that button. List only the actions that matter and use `visible` to show the ones that fit the state. Buttons on a row (`item.actions`) go at the end of that row.
 8. **Say what a button does and when.** Use `visible` so only the buttons that
    fit the state appear; `confirm` for anything that interrupts; `type_to_confirm`
    for anything that deletes.
