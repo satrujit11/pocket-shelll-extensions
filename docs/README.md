@@ -6,6 +6,7 @@
 | [building.md](building.md) | get the tool, write an extension step by step, try it on a real tool |
 | [testing.md](testing.md) | fixtures with fake programs, every key of a check, what to prove |
 | [publishing.md](publishing.md) | the index, what the app and agent verify, mirroring, releasing |
+| [hosting.md](hosting.md) | host your own extensions (GitHub public and private with a token, GitLab, S3 or any HTTPS host) and add them by link |
 | [signing.md](signing.md) | the signing key, how to sign the registry and check signatures, run your own, key leaks |
 | [../CONTRIBUTING.md](../CONTRIBUTING.md) | how to contribute and the rules for commands |
 | [example-script-extension.yaml](example-script-extension.yaml) | an extension made only of one inline script |

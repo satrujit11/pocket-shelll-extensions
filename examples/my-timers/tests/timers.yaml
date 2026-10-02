@@ -1,0 +1,23 @@
+# A fixture: fake programs that print what the real tool prints, and checks on
+# what the screens and buttons do. `pocket-shell-cli ext test examples/my-timers` runs it.
+name: the list, and a button that runs through sudo after confirming
+fakes:
+  systemctl: |
+    case "$1" in
+      --version) echo "systemd 255" ;;
+      list-timers) echo '[{"unit":"apt-daily.timer","activates":"apt-daily.service","next":1767225600000000,"left":3600000000}]' ;;
+    esac
+checks:
+  - screen: main
+    contains: ['apt-daily.timer', 'apt-daily.service']
+  - name: running now asks first
+    action: run-now
+    screen: main
+    params: { unit: apt-daily.service }
+    refused: confirmed
+  - name: and then runs through sudo
+    action: run-now
+    screen: main
+    params: { unit: apt-daily.service }
+    confirmed: true
+    ran: ["sudo -n -- systemctl start apt-daily.service"]

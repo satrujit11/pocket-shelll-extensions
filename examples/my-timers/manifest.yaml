@@ -1,0 +1,63 @@
+# A starting point for your own extension: copy this folder, rename it, change
+# `id`, the program it looks for and the screens. It shows a list of systemd
+# timers and lets you start one now. Delete what you do not need.
+spec: pocketshell.ext/v0
+id: my-timers
+name: My timers
+description: "Systemd timers: what is scheduled, when it runs next, and a button to run one now."
+icon: schedule
+category: system
+version: 1.0.0
+author: You
+docs: https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html
+license: MIT
+
+# How the agent decides the tool is on this server.
+detect:
+  binaries: [systemctl]
+  version_args: [--version]
+
+permissions: [read-services, control-services, sudo]
+
+# Hints shown above the raw error when a command fails.
+errors:
+  - match: "Failed to connect to bus|System has not been booted with systemd"
+    title: systemd is not available here
+    text: This server does not run systemd, so there are no timers to show.
+
+# Reads: every command is an argument list, never a shell string.
+data:
+  timers:
+    run: [systemctl, list-timers, --all, --no-pager, --output=json]
+    parse: json
+    path: $
+    refresh: 15s
+    timeout: 8s
+
+actions:
+  run-now:
+    label: Run now
+    icon: play
+    run: [systemctl, start, "{{ params.unit }}"]
+    privilege: sudo
+    confirm:
+      title: "Run {{ params.unit }} now?"
+      text: It starts the service this timer triggers, outside its schedule.
+
+screens:
+  main:
+    title: Timers
+    subtitle: "{{ data.timers | count() }} timers"
+    docs: https://www.freedesktop.org/software/systemd/man/latest/systemctl.html
+    sections:
+      - components:
+          - type: list
+            from: timers
+            search: true
+            empty: There are no timers.
+            item:
+              title: "{{ row.unit }}"
+              subtitle: "runs {{ row.activates }}"
+              # A button on each row, so no detail page is needed to use it.
+              actions:
+                - { action: run-now, with: { unit: "{{ row.activates }}" } }
