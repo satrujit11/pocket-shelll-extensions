@@ -2,50 +2,58 @@
 
 Firewall status and rules: add, delete, enable and disable.
 
+`ufw` v1.0.0 · [Tool documentation](https://manpages.ubuntu.com/manpages/noble/en/man8/ufw.8.html)
+
+## Overview
+
 | | |
 |---|---|
-| Extension id | `ufw` |
-| Version | 1.0.0 |
-| Shows up when | `ufw` is installed |
-| Tool documentation | https://manpages.ubuntu.com/manpages/noble/en/man8/ufw.8.html |
-| Logo | none (the app draws the `shield` icon) |
-| Permissions | read-firewall, control-firewall, sudo |
+| Appears when | `ufw` is found on the server |
+| Permissions | `read-firewall`, `control-firewall`, `sudo` |
+| Runs as root | some commands (sudo) |
+| Changes things | yes, through buttons you press |
 
 ## What you see
 
-- **main** screen: Firewall - tabs: Status, Rules
-- **rule** screen: Rule {{ params.n }}
-
-## Commands it runs
-
-Everything below is run by the agent on the server, never by the phone. Values you enter are passed as separate arguments, never through a shell.
-
-| Where | Kind | Command | As |
-|---|---|---|---|
-| `data.status` | read | `ufw status verbose` | sudo |
-| `data.rules` | read | `ufw status numbered` | sudo |
-| `actions.allow` | action | `ufw allow {{ form.port }}/{{ form.proto }}` | sudo |
-| `actions.deny` | action | `ufw deny {{ form.port }}/{{ form.proto }}` | sudo |
-| `actions.delete-rule` | action | `ufw --force delete {{ params.n }}` | sudo |
-| `actions.enable` | action | `ufw --force enable` | sudo |
-| `actions.disable` | action | `ufw disable` | sudo |
+- **main** - Firewall (tabs: Status, Rules)
+- **rule**
 
 ## Buttons
 
-- **Allow a port** (`allow`) - asks for details
-- **Block a port** (`deny`) - asks first, asks for details
-- **Delete rule** (`delete-rule`) - dangerous, asks first
-- **Enable** (`enable`) - asks first
-- **Disable** (`disable`) - dangerous, asks first, you type a name
+| Button | Safety | Notes |
+|---|---|---|
+| **Allow a port** | normal | asks for details |
+| **Block a port** | normal | asks first; asks for details |
+| **Delete rule** | dangerous | asks first |
+| **Enable** | normal | asks first |
+| **Disable** | dangerous | asks first, you type the name |
+
+## Commands it can run
+
+Listed last because they are the fine print: the agent on the server runs all of them, never the phone, and anything you type is passed as a separate argument, never through a shell. The app shows this same list before you add the extension.
+
+**Reads** (change nothing)
+
+| Where | Command | As |
+|---|---|---|
+| `data.status` | `ufw status verbose` | sudo |
+| `data.rules` | `ufw status numbered` | sudo |
+
+**Changes**
+
+| Where | Command | As |
+|---|---|---|
+| `actions.allow` | `ufw allow {{ form.port }}/{{ form.proto }}` | sudo |
+| `actions.deny` | `ufw deny {{ form.port }}/{{ form.proto }}` | sudo |
+| `actions.delete-rule` | `ufw --force delete {{ params.n }}` | sudo |
+| `actions.enable` | `ufw --force enable` | sudo |
+| `actions.disable` | `ufw disable` | sudo |
 
 ## Test it
 
 ```sh
-# against fake programs (what CI runs)
-pocket-shell-cli ext test extensions/ufw
-
-# against the real tool on this machine
-pocket-shell-cli ext try extensions/ufw main
+pocket-shell-cli ext test ufw          # fake programs, what CI runs
+pocket-shell-cli ext try ufw main      # the real tool on this machine
 ```
 
-The fixtures are in [`tests/`](tests).
+Fixtures are in [`tests/`](tests).

@@ -1,41 +1,49 @@
-# Redis
+# <img src="logo.svg" alt="" width="48" align="left"> Redis
 
 Server status, memory, clients and keys of a local Redis.
 
+`redis` v1.0.0 · [Tool documentation](https://redis.io/docs/latest/commands/info/)
+
+## Overview
+
 | | |
 |---|---|
-| Extension id | `redis` |
-| Version | 1.0.0 |
-| Shows up when | `redis-cli` is installed |
-| Tool documentation | https://redis.io/docs/latest/commands/info/ |
-| Logo | ![logo](logo.svg) |
-| Permissions | read-redis, control-redis |
+| Appears when | `redis-cli` is found on the server |
+| Permissions | `read-redis`, `control-redis` |
+| Runs as root | no |
+| Changes things | yes, through buttons you press |
 
 ## What you see
 
-- **main** screen: Redis - tabs: Overview
-
-## Commands it runs
-
-Everything below is run by the agent on the server, never by the phone. Values you enter are passed as separate arguments, never through a shell.
-
-| Where | Kind | Command | As |
-|---|---|---|---|
-| `data.info` | read | `redis-cli info` | user |
-| `actions.save` | action | `redis-cli bgsave` | user |
+- **main** - Redis (tabs: Overview)
 
 ## Buttons
 
-- **Save to disk** (`save`) - asks first
+| Button | Safety | Notes |
+|---|---|---|
+| **Save to disk** | normal | asks first |
+
+## Commands it can run
+
+Listed last because they are the fine print: the agent on the server runs all of them, never the phone, and anything you type is passed as a separate argument, never through a shell. The app shows this same list before you add the extension.
+
+**Reads** (change nothing)
+
+| Where | Command | As |
+|---|---|---|
+| `data.info` | `redis-cli info` | user |
+
+**Changes**
+
+| Where | Command | As |
+|---|---|---|
+| `actions.save` | `redis-cli bgsave` | user |
 
 ## Test it
 
 ```sh
-# against fake programs (what CI runs)
-pocket-shell-cli ext test extensions/redis
-
-# against the real tool on this machine
-pocket-shell-cli ext try extensions/redis main
+pocket-shell-cli ext test redis          # fake programs, what CI runs
+pocket-shell-cli ext try redis main      # the real tool on this machine
 ```
 
-The fixtures are in [`tests/`](tests).
+Fixtures are in [`tests/`](tests).

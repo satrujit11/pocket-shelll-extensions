@@ -1,50 +1,58 @@
-# Docker (manifest)
+# <img src="logo.svg" alt="" width="48" align="left"> Docker (manifest)
 
 Containers of the Docker engine: state, logs, start, stop, restart, remove.
 
+`docker-lite` v1.0.0 · [Tool documentation](https://docs.docker.com/reference/cli/docker/)
+
+## Overview
+
 | | |
 |---|---|
-| Extension id | `docker-lite` |
-| Version | 1.0.0 |
-| Shows up when | `docker` is installed |
-| Tool documentation | https://docs.docker.com/reference/cli/docker/ |
-| Logo | ![logo](logo.svg) |
-| Permissions | read-containers, control-containers |
+| Appears when | `docker` is found on the server |
+| Permissions | `read-containers`, `control-containers` |
+| Runs as root | no |
+| Changes things | yes, through buttons you press |
 
 ## What you see
 
-- **main** screen: Containers - tabs: Overview, Running, All
-- **detail** screen: {{ data.container.Name | replace('/', '') }} - tabs: Status, Logs
-
-## Commands it runs
-
-Everything below is run by the agent on the server, never by the phone. Values you enter are passed as separate arguments, never through a shell.
-
-| Where | Kind | Command | As |
-|---|---|---|---|
-| `data.containers` | read | `docker ps -a --no-trunc --format json` | user |
-| `data.container` | read | `docker inspect {{ params.id }}` | user |
-| `data.logs` | read (live stream) | `docker logs --tail 200 --follow {{ params.id }}` | user |
-| `actions.start` | action | `docker start {{ params.id }}` | user |
-| `actions.stop` | action | `docker stop {{ params.id }}` | user |
-| `actions.restart` | action | `docker restart {{ params.id }}` | user |
-| `actions.remove` | action | `docker rm {{ params.id }}` | user |
+- **main** - Containers (tabs: Overview, Running, All)
+- **detail** (tabs: Status, Logs)
 
 ## Buttons
 
-- **Start** (`start`)
-- **Stop** (`stop`) - dangerous, asks first
-- **Restart** (`restart`) - asks first
-- **Remove** (`remove`) - dangerous, asks first, you type a name
+| Button | Safety | Notes |
+|---|---|---|
+| **Start** | normal | - |
+| **Stop** | dangerous | asks first |
+| **Restart** | normal | asks first |
+| **Remove** | dangerous | asks first, you type the name |
+
+## Commands it can run
+
+Listed last because they are the fine print: the agent on the server runs all of them, never the phone, and anything you type is passed as a separate argument, never through a shell. The app shows this same list before you add the extension.
+
+**Reads** (change nothing)
+
+| Where | Command | As |
+|---|---|---|
+| `data.containers` | `docker ps -a --no-trunc --format json` | user |
+| `data.container` | `docker inspect {{ params.id }}` | user |
+| `data.logs` | `docker logs --tail 200 --follow {{ params.id }}` (live) | user |
+
+**Changes**
+
+| Where | Command | As |
+|---|---|---|
+| `actions.start` | `docker start {{ params.id }}` | user |
+| `actions.stop` | `docker stop {{ params.id }}` | user |
+| `actions.restart` | `docker restart {{ params.id }}` | user |
+| `actions.remove` | `docker rm {{ params.id }}` | user |
 
 ## Test it
 
 ```sh
-# against fake programs (what CI runs)
-pocket-shell-cli ext test extensions/docker
-
-# against the real tool on this machine
-pocket-shell-cli ext try extensions/docker main
+pocket-shell-cli ext test docker          # fake programs, what CI runs
+pocket-shell-cli ext try docker main      # the real tool on this machine
 ```
 
-The fixtures are in [`tests/`](tests).
+Fixtures are in [`tests/`](tests).

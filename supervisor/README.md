@@ -2,47 +2,55 @@
 
 Programs managed by supervisord: state, start, stop, restart.
 
+`supervisor` v1.0.0 · [Tool documentation](http://supervisord.org/running.html#supervisorctl-command-line-options)
+
+## Overview
+
 | | |
 |---|---|
-| Extension id | `supervisor` |
-| Version | 1.0.0 |
-| Shows up when | `supervisorctl` is installed |
-| Tool documentation | http://supervisord.org/running.html#supervisorctl-command-line-options |
-| Logo | none (the app draws the `process` icon) |
-| Permissions | read-processes, control-processes, sudo |
+| Appears when | `supervisorctl` is found on the server |
+| Permissions | `read-processes`, `control-processes`, `sudo` |
+| Runs as root | some commands (sudo) |
+| Changes things | yes, through buttons you press |
 
 ## What you see
 
-- **main** screen: Supervisor - tabs: Overview, Programs
-- **detail** screen: {{ params.name }} - tabs: Status, Output
-
-## Commands it runs
-
-Everything below is run by the agent on the server, never by the phone. Values you enter are passed as separate arguments, never through a shell.
-
-| Where | Kind | Command | As |
-|---|---|---|---|
-| `data.programs` | read | `supervisorctl status` | sudo |
-| `data.program` | read | `supervisorctl status {{ params.name }}` | sudo |
-| `data.logs` | read | `supervisorctl tail {{ params.name }}` | sudo |
-| `actions.start` | action | `supervisorctl start {{ params.name }}` | sudo |
-| `actions.stop` | action | `supervisorctl stop {{ params.name }}` | sudo |
-| `actions.restart` | action | `supervisorctl restart {{ params.name }}` | sudo |
+- **main** - Supervisor (tabs: Overview, Programs)
+- **detail** (tabs: Status, Output)
 
 ## Buttons
 
-- **Start** (`start`)
-- **Stop** (`stop`) - dangerous, asks first
-- **Restart** (`restart`) - asks first
+| Button | Safety | Notes |
+|---|---|---|
+| **Start** | normal | - |
+| **Stop** | dangerous | asks first |
+| **Restart** | normal | asks first |
+
+## Commands it can run
+
+Listed last because they are the fine print: the agent on the server runs all of them, never the phone, and anything you type is passed as a separate argument, never through a shell. The app shows this same list before you add the extension.
+
+**Reads** (change nothing)
+
+| Where | Command | As |
+|---|---|---|
+| `data.programs` | `supervisorctl status` | sudo |
+| `data.program` | `supervisorctl status {{ params.name }}` | sudo |
+| `data.logs` | `supervisorctl tail {{ params.name }}` | sudo |
+
+**Changes**
+
+| Where | Command | As |
+|---|---|---|
+| `actions.start` | `supervisorctl start {{ params.name }}` | sudo |
+| `actions.stop` | `supervisorctl stop {{ params.name }}` | sudo |
+| `actions.restart` | `supervisorctl restart {{ params.name }}` | sudo |
 
 ## Test it
 
 ```sh
-# against fake programs (what CI runs)
-pocket-shell-cli ext test extensions/supervisor
-
-# against the real tool on this machine
-pocket-shell-cli ext try extensions/supervisor main
+pocket-shell-cli ext test supervisor          # fake programs, what CI runs
+pocket-shell-cli ext try supervisor main      # the real tool on this machine
 ```
 
-The fixtures are in [`tests/`](tests).
+Fixtures are in [`tests/`](tests).

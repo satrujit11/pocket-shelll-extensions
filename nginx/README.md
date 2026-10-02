@@ -1,51 +1,59 @@
-# Nginx
+# <img src="logo.svg" alt="" width="48" align="left"> Nginx
 
 Web server status, enabled sites, config test, logs, reload and restart.
 
+`nginx` v1.0.0 · [Tool documentation](https://nginx.org/en/docs/)
+
+## Overview
+
 | | |
 |---|---|
-| Extension id | `nginx` |
-| Version | 1.0.0 |
-| Shows up when | `nginx` is installed |
-| Tool documentation | https://nginx.org/en/docs/ |
-| Logo | ![logo](logo.svg) |
-| Permissions | read-config, read-logs, control-services, sudo |
+| Appears when | `nginx` is found on the server |
+| Permissions | `read-config`, `read-logs`, `control-services`, `sudo` |
+| Runs as root | some commands (sudo) |
+| Changes things | yes, through buttons you press |
 
 ## What you see
 
-- **main** screen: Nginx - tabs: Overview, Sites, Logs
-- **site** screen: {{ params.name }}
-
-## Commands it runs
-
-Everything below is run by the agent on the server, never by the phone. Values you enter are passed as separate arguments, never through a shell.
-
-| Where | Kind | Command | As |
-|---|---|---|---|
-| `data.status` | read | `systemctl is-active nginx` | user |
-| `data.configtest` | read | `nginx -t` | sudo |
-| `data.sites` | read | `ls -1 /etc/nginx/sites-enabled` | user |
-| `data.site` | read | `cat /etc/nginx/sites-enabled/{{ params.name }}` | sudo |
-| `data.errors` | read | `tail -n 300 /var/log/nginx/error.log` | sudo |
-| `data.access` | read | `tail -n 300 /var/log/nginx/access.log` | sudo |
-| `actions.test` | action | `nginx -t` | sudo |
-| `actions.reload` | action | `systemctl reload nginx` | sudo |
-| `actions.restart` | action | `systemctl restart nginx` | sudo |
+- **main** - Nginx (tabs: Overview, Sites, Logs)
+- **site**
 
 ## Buttons
 
-- **Test config** (`test`)
-- **Reload** (`reload`) - asks first
-- **Restart** (`restart`) - dangerous, asks first
+| Button | Safety | Notes |
+|---|---|---|
+| **Test config** | normal | - |
+| **Reload** | normal | asks first |
+| **Restart** | dangerous | asks first |
+
+## Commands it can run
+
+Listed last because they are the fine print: the agent on the server runs all of them, never the phone, and anything you type is passed as a separate argument, never through a shell. The app shows this same list before you add the extension.
+
+**Reads** (change nothing)
+
+| Where | Command | As |
+|---|---|---|
+| `data.status` | `systemctl is-active nginx` | user |
+| `data.configtest` | `nginx -t` | sudo |
+| `data.sites` | `ls -1 /etc/nginx/sites-enabled` | user |
+| `data.site` | `cat /etc/nginx/sites-enabled/{{ params.name }}` | sudo |
+| `data.errors` | `tail -n 300 /var/log/nginx/error.log` | sudo |
+| `data.access` | `tail -n 300 /var/log/nginx/access.log` | sudo |
+
+**Changes**
+
+| Where | Command | As |
+|---|---|---|
+| `actions.test` | `nginx -t` | sudo |
+| `actions.reload` | `systemctl reload nginx` | sudo |
+| `actions.restart` | `systemctl restart nginx` | sudo |
 
 ## Test it
 
 ```sh
-# against fake programs (what CI runs)
-pocket-shell-cli ext test extensions/nginx
-
-# against the real tool on this machine
-pocket-shell-cli ext try extensions/nginx main
+pocket-shell-cli ext test nginx          # fake programs, what CI runs
+pocket-shell-cli ext try nginx main      # the real tool on this machine
 ```
 
-The fixtures are in [`tests/`](tests).
+Fixtures are in [`tests/`](tests).

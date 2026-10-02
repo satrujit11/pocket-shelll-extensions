@@ -2,49 +2,57 @@
 
 systemd services: what runs, what failed, logs, start, stop and restart.
 
+`systemd` v1.0.0 · [Tool documentation](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html)
+
+## Overview
+
 | | |
 |---|---|
-| Extension id | `systemd` |
-| Version | 1.0.0 |
-| Shows up when | `systemctl` is installed |
-| Tool documentation | https://www.freedesktop.org/software/systemd/man/latest/systemctl.html |
-| Logo | none (the app draws the `server` icon) |
-| Permissions | read-services, control-services, sudo |
+| Appears when | `systemctl` is found on the server |
+| Permissions | `read-services`, `control-services`, `sudo` |
+| Runs as root | some commands (sudo) |
+| Changes things | yes, through buttons you press |
 
 ## What you see
 
-- **main** screen: Services - tabs: Overview, Running, All
-- **detail** screen: {{ params.name }} - tabs: Status, Logs
-
-## Commands it runs
-
-Everything below is run by the agent on the server, never by the phone. Values you enter are passed as separate arguments, never through a shell.
-
-| Where | Kind | Command | As |
-|---|---|---|---|
-| `data.units` | read | `systemctl list-units --type=service --all --no-pager --output=json` | user |
-| `data.unit` | read | `systemctl show {{ params.name }} --no-pager` | user |
-| `data.journal` | read (live stream) | `journalctl -u {{ params.name }} -n 200 -f --no-pager --output=short-iso` | sudo |
-| `actions.start` | action | `systemctl start {{ params.name }}` | sudo |
-| `actions.stop` | action | `systemctl stop {{ params.name }}` | sudo |
-| `actions.restart` | action | `systemctl restart {{ params.name }}` | sudo |
-| `actions.reload-daemon` | action | `systemctl daemon-reload` | sudo |
+- **main** - Services (tabs: Overview, Running, All)
+- **detail** (tabs: Status, Logs)
 
 ## Buttons
 
-- **Start** (`start`)
-- **Stop** (`stop`) - dangerous, asks first, you type a name
-- **Restart** (`restart`) - asks first
-- **Reload systemd** (`reload-daemon`)
+| Button | Safety | Notes |
+|---|---|---|
+| **Start** | normal | - |
+| **Stop** | dangerous | asks first, you type the name |
+| **Restart** | normal | asks first |
+| **Reload systemd** | normal | - |
+
+## Commands it can run
+
+Listed last because they are the fine print: the agent on the server runs all of them, never the phone, and anything you type is passed as a separate argument, never through a shell. The app shows this same list before you add the extension.
+
+**Reads** (change nothing)
+
+| Where | Command | As |
+|---|---|---|
+| `data.units` | `systemctl list-units --type=service --all --no-pager --output=json` | user |
+| `data.unit` | `systemctl show {{ params.name }} --no-pager` | user |
+| `data.journal` | `journalctl -u {{ params.name }} -n 200 -f --no-pager --output=short-iso` (live) | sudo |
+
+**Changes**
+
+| Where | Command | As |
+|---|---|---|
+| `actions.start` | `systemctl start {{ params.name }}` | sudo |
+| `actions.stop` | `systemctl stop {{ params.name }}` | sudo |
+| `actions.restart` | `systemctl restart {{ params.name }}` | sudo |
+| `actions.reload-daemon` | `systemctl daemon-reload` | sudo |
 
 ## Test it
 
 ```sh
-# against fake programs (what CI runs)
-pocket-shell-cli ext test extensions/systemd
-
-# against the real tool on this machine
-pocket-shell-cli ext try extensions/systemd main
+pocket-shell-cli ext test systemd          # fake programs, what CI runs
+pocket-shell-cli ext try systemd main      # the real tool on this machine
 ```
 
-The fixtures are in [`tests/`](tests).
+Fixtures are in [`tests/`](tests).
