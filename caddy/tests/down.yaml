@@ -1,0 +1,15 @@
+name: a Caddy that is not a service here is explained
+fakes:
+  caddy: |
+    case "$1" in version) echo "v2.8.4" ;; validate) echo "Valid configuration" >&2 ;; esac
+  systemctl: |
+    echo "Unit caddy.service could not be found." >&2; exit 4
+  cat: |
+    echo "cat: /etc/caddy/Caddyfile: No such file or directory" >&2; exit 1
+  awk: |
+    exit 0
+  journalctl: |
+    exit 0
+checks:
+  - screen: main
+    errors: ['Caddy is not a systemd service here']

@@ -2,7 +2,7 @@
 
 Firewall status and rules: add, delete, enable and disable.
 
-`ufw` v1.0.0 · [Tool documentation](https://manpages.ubuntu.com/manpages/noble/en/man8/ufw.8.html)
+`ufw` v1.1.0 · [Tool documentation](https://manpages.ubuntu.com/manpages/noble/en/man8/ufw.8.html)
 
 ## Overview
 

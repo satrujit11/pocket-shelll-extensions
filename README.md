@@ -4,15 +4,16 @@ Extensions for [Pocket Shell](https://github.com/satrujit11/pocket-shell): each 
 
 | | Extension | What it does |
 |---|---|---|
-| <img src="docker/logo.svg" width="20" height="20" alt=""> | [Docker (manifest)](docker) | Containers of the Docker engine: state, logs, start, stop, restart, remove. |
+| <img src="caddy/logo.svg" width="20" height="20" alt=""> | [Caddy](caddy) | Web server status, the sites in the Caddyfile, config validation, live logs, reload and restart. |
+| <img src="docker/logo.svg" width="20" height="20" alt=""> | [Docker](docker) | Containers, images, volumes and networks of Docker: state, resource use, logs, a shell, start, stop, restart, pause and remove. |
+|  | [Firewall (ufw)](ufw) | Firewall status and rules: add, delete, enable and disable. |
 | <img src="kubernetes/logo.svg" width="20" height="20" alt=""> | [Kubernetes](kubernetes) | Pods and nodes through kubectl: status, live logs, delete a pod. |
 | <img src="nginx/logo.svg" width="20" height="20" alt=""> | [Nginx](nginx) | Web server status, enabled sites, config test, logs, reload and restart. |
-| <img src="pm2/logo.svg" width="20" height="20" alt=""> | [PM2 (manifest)](pm2) | Node processes managed by PM2: status, memory, restarts, and control. |
-| <img src="podman/logo.svg" width="20" height="20" alt=""> | [Podman (manifest)](podman) | Containers of Podman: state, logs, start, stop, restart, remove. |
+| <img src="pm2/logo.svg" width="20" height="20" alt=""> | [PM2](pm2) | Node processes managed by PM2: status, resource use, restarts, error and output logs, start, stop, restart, reload and delete. |
+| <img src="podman/logo.svg" width="20" height="20" alt=""> | [Podman](podman) | Containers, images, volumes and networks of Podman: state, resource use, logs, a shell, start, stop, restart, pause and remove. |
 | <img src="redis/logo.svg" width="20" height="20" alt=""> | [Redis](redis) | Server status, memory, clients and keys of a local Redis. |
-|  | [Supervisor](supervisor) | Programs managed by supervisord: state, start, stop, restart. |
 |  | [Services](systemd) | systemd services: what runs, what failed, logs, start, stop and restart. |
-|  | [Firewall (ufw)](ufw) | Firewall status and rules: add, delete, enable and disable. |
+|  | [Supervisor](supervisor) | Programs managed by supervisord: state, start, stop, restart. |
 
 Each folder is one extension and doubles as its wiki page:
 

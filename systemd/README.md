@@ -2,7 +2,7 @@
 
 systemd services: what runs, what failed, logs, start, stop and restart.
 
-`systemd` v1.0.0 · [Tool documentation](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html)
+`systemd` v1.1.0 · [Tool documentation](https://www.freedesktop.org/software/systemd/man/latest/systemctl.html)
 
 ## Overview
 

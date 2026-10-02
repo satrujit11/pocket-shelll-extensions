@@ -2,7 +2,7 @@
 
 Programs managed by supervisord: state, start, stop, restart.
 
-`supervisor` v1.0.0 · [Tool documentation](http://supervisord.org/running.html#supervisorctl-command-line-options)
+`supervisor` v1.1.0 · [Tool documentation](http://supervisord.org/running.html#supervisorctl-command-line-options)
 
 ## Overview
 

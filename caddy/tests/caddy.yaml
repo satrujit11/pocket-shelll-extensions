@@ -1,0 +1,53 @@
+name: status, sites, validation, logs and control
+fakes:
+  caddy: |
+    case "$1" in
+      version) echo "v2.8.4 h1:abc" ;;
+      validate) echo '{"level":"info","msg":"adapted config to JSON"}' >&2; echo "Valid configuration" >&2 ;;
+      fmt) echo formatted ;;
+    esac
+  systemctl: |
+    case "$1" in is-active) echo active ;; esac
+  cat: |
+    printf 'example.com {\n\treverse_proxy localhost:3000\n}\n\napi.example.com {\n\trespond "ok"\n}\n'
+  awk: |
+    if [ "$1" = "-v" ]; then printf 'example.com {\n\treverse_proxy localhost:3000\n}\n'; else printf 'example.com\napi.example.com\n'; fi
+  journalctl: |
+    echo '2026-01-01T00:00:00 {"level":"info","msg":"serving"}'; echo '2026-01-01T00:00:01 {"level":"error","msg":"tls handshake failed"}'
+checks:
+  - name: the overview lists the sites and the validation
+    screen: main
+    contains: ['active', 'Valid configuration', 'api.example.com', '"as":"sheet"', 'reverse_proxy localhost:3000']
+    offers: [validate, reload, restart, format]
+  - name: the logs carry level rules
+    screen: main
+    contains: ['tls handshake failed', '"levels"']
+  - name: a site opens as a sheet with its own block
+    screen: site
+    params: { name: example.com }
+    contains: ['example.com', 'reverse_proxy localhost:3000']
+  - name: validate shows the output
+    action: validate
+    screen: main
+    output: ['Valid configuration']
+  - name: reload asks first, then runs through sudo
+    action: reload
+    screen: main
+    refused: confirmed
+  - name: reload runs
+    action: reload
+    screen: main
+    confirmed: true
+    ran: ["sudo -n -- systemctl reload caddy"]
+  - name: formatting needs the word typed
+    action: format
+    screen: main
+    confirmed: true
+    confirm_text: nope
+    refused: does not match
+  - name: formatting with the word typed rewrites in place through sudo
+    action: format
+    screen: main
+    confirmed: true
+    confirm_text: format
+    ran: ["sudo -n -- caddy fmt --overwrite /etc/caddy/Caddyfile"]

@@ -2,7 +2,7 @@
 
 Server status, memory, clients and keys of a local Redis.
 
-`redis` v1.0.0 · [Tool documentation](https://redis.io/docs/latest/commands/info/)
+`redis` v1.1.0 · [Tool documentation](https://redis.io/docs/latest/commands/info/)
 
 ## Overview
 

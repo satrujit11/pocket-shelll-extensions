@@ -1,0 +1,181 @@
+# Caddy: status, the sites in the Caddyfile, validation, live logs, and the
+# actions an admin reaches for: validate, reload, restart, format. It reads
+# /etc/caddy/Caddyfile, where the Caddy packages put it.
+spec: pocketshell.ext/v0
+id: caddy
+name: Caddy
+description: "Web server status, the sites in the Caddyfile, config validation, live logs, reload and restart."
+icon: web
+category: web
+version: 1.0.0
+author: Pocket Shell
+docs: https://caddyserver.com/docs/
+logo: https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/caddy/logo.svg
+license: Apache-2.0
+requires: [properties, streams, sheet, state]
+
+detect:
+  binaries: [caddy]
+  version_args: [version]
+
+permissions: [read-config, read-logs, control-services, sudo]
+
+errors:
+  - match: "Permission denied|permission denied"
+    title: Caddy files need root
+    text: The Caddyfile or the journal is not readable by this user. The commands that need it already ask for sudo, so allow it for this user in sudoers.
+  - match: "Unit caddy.service could not be found|not-found"
+    title: Caddy is not a systemd service here
+    text: Reload and restart use systemctl and the service name caddy. If Caddy runs another way (a container, caddy run), manage it there.
+  - match: "no such file or directory|No such file"
+    title: No Caddyfile at /etc/caddy/Caddyfile
+    text: This extension reads the default location. Create the file, or point your service at it.
+
+data:
+  status:
+    run: [systemctl, is-active, caddy]
+    parse: text
+    refresh: 5s
+  validate:
+    run: [caddy, validate, --config, /etc/caddy/Caddyfile]
+    parse: text
+    merge_stderr: true
+    privilege: sudo
+    refresh: 30s
+  caddyfile:
+    run: [cat, /etc/caddy/Caddyfile]
+    parse: text
+    privilege: sudo
+    refresh: 30s
+  sites:
+    script: |
+      # The address of every top-level block of the Caddyfile.
+      awk '/^[^[:space:]#}(][^{]*\{[[:space:]]*$/ { sub(/[[:space:]]*\{.*/, ""); print }' /etc/caddy/Caddyfile
+    parse: lines
+    privilege: sudo
+    refresh: 30s
+  site:
+    params: [name]
+    script: |
+      # The block whose address is $1, up to its closing brace.
+      awk -v want="$1" '
+        !on && /^[^[:space:]#}(][^{]*\{[[:space:]]*$/ { a=$0; sub(/[[:space:]]*\{.*/, "", a); if (a == want) { on=1 } }
+        on { print }
+        on && /^\}/ { exit }
+      ' /etc/caddy/Caddyfile
+    args: ["{{ params.name }}"]
+    parse: text
+    privilege: sudo
+    refresh: manual
+  journal:
+    run: [journalctl, -u, caddy, -n, "{{ state.lines }}", -f, --no-pager, --output=short-iso]
+    parse: lines
+    stream: true
+    privilege: sudo
+
+actions:
+  validate:
+    label: Validate config
+    icon: check
+    run: [caddy, validate, --config, /etc/caddy/Caddyfile]
+    privilege: sudo
+    result: output
+  reload:
+    label: Reload
+    icon: restart
+    run: [systemctl, reload, caddy]
+    privilege: sudo
+    confirm:
+      title: Reload Caddy?
+      text: Applies the current Caddyfile without dropping connections. A config that does not validate is refused by Caddy and the old one keeps running.
+    after: [{ refresh: status }, { refresh: validate }]
+  restart:
+    label: Restart
+    icon: restart
+    style: danger
+    run: [systemctl, restart, caddy]
+    privilege: sudo
+    confirm:
+      title: Restart Caddy?
+      text: Connections are dropped for a moment.
+    after: [{ refresh: status }]
+  format:
+    label: Format the Caddyfile
+    icon: edit
+    style: danger
+    run: [caddy, fmt, --overwrite, /etc/caddy/Caddyfile]
+    privilege: sudo
+    confirm:
+      title: Rewrite the Caddyfile?
+      text: Caddy re-indents the file in place. Only whitespace changes, but the file on disk is replaced.
+      type_to_confirm: format
+    after: [{ refresh: caddyfile }, { refresh: sites }]
+
+screens:
+  main:
+    title: Caddy
+    subtitle: "{{ data.status.text | trim() }}"
+    docs: https://caddyserver.com/docs/caddyfile
+    actions: [validate, reload, restart, format]
+    state:
+      lines: { type: number, label: Lines, options: [100, 200, 500, 1000], default: 200 }
+    tabs:
+      - id: overview
+        title: Overview
+        sections:
+          - layout: { columns: 3 }
+            components:
+              - type: stat
+                label: Status
+                value: "{{ data.status.text | trim() | default('unknown') }}"
+                tone: "{{ data.status.text | trim() == 'active' ? 'success' : 'danger' }}"
+              - type: stat
+                label: Sites
+                value: "{{ data.sites | count() }}"
+              - type: stat
+                label: Config
+                value: "{{ data.validate.text | contains('Valid configuration') ? 'OK' : 'Problem' }}"
+                tone: "{{ data.validate.text | contains('Valid configuration') ? 'success' : 'warning' }}"
+          - title: Sites
+            components:
+              - type: list
+                from: sites
+                search: true
+                sort: line
+                empty: The Caddyfile has no site blocks.
+                item:
+                  title: "{{ row.line }}"
+                on_tap: { screen: site, as: sheet, params: { name: "{{ row.line }}" } }
+          - title: Validation
+            collapsible: true
+            components:
+              - type: code
+                value: "{{ data.validate.text | trim() }}"
+          - title: Caddyfile
+            collapsible: true
+            components:
+              - type: code
+                language: caddyfile
+                value: "{{ data.caddyfile.text }}"
+      - id: logs
+        title: Logs
+        sections:
+          - components:
+              - type: logs
+                from: journal
+                follow: true
+                search: true
+                controls: [lines]
+                levels:
+                  - { match: "\"level\":\"(error|fatal|panic)\"|\\b(ERROR|FATAL|PANIC)\\b", level: error }
+                  - { match: "\"level\":\"warn\"|\\bWARN\\b", level: warn }
+                  - { match: "\"level\":\"debug\"|\\bDEBUG\\b", level: debug }
+
+  site:
+    params: [name]
+    title: "{{ params.name }}"
+    sections:
+      - components:
+          - type: code
+            language: caddyfile
+            value: "{{ data.site.text }}"

@@ -2,7 +2,7 @@
 
 Web server status, enabled sites, config test, logs, reload and restart.
 
-`nginx` v1.0.0 · [Tool documentation](https://nginx.org/en/docs/)
+`nginx` v1.1.0 · [Tool documentation](https://nginx.org/en/docs/)
 
 ## Overview
 

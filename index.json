@@ -1,6 +1,21 @@
 {
   "extensions": [
     {
+      "id": "caddy",
+      "name": "Caddy",
+      "description": "Web server status, the sites in the Caddyfile, config validation, live logs, reload and restart.",
+      "icon": "web",
+      "category": "web",
+      "version": "1.0.0",
+      "author": "Pocket Shell",
+      "docs": "https://caddyserver.com/docs/",
+      "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/caddy/logo.svg",
+      "readme": "caddy/README.md",
+      "path": "caddy/manifest.yaml",
+      "sha256": "9d9dc2ddd5ad8131cf17c38fcde15b420ca4aab371d3f638d35ef1e8838b5c34",
+      "signature": "iYsvpntHzByoWwe53GNClTf41tabR7Rhy81pulTMSXnx8aadnWlUK+eApMaAKcDWh+305f9esOTA26hDYbSYCg=="
+    },
+    {
       "id": "docker",
       "name": "Docker",
       "description": "Containers, images, volumes and networks of Docker: state, resource use, logs, a shell, start, stop, restart, pause and remove.",
@@ -135,5 +150,5 @@
   ],
   "name": "Pocket Shell extensions",
   "spec": "pocketshell.registry/v0",
-  "updated": "2026-10-02T06:25:08Z"
+  "updated": "2026-10-02T06:38:45Z"
 }
