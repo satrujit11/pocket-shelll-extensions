@@ -40,5 +40,5 @@ checks:
     ran: ["sudo -n -- systemctl stop nginx.service"]
   - name: one page with chips
     screen: main
-    contains: ['"filters"', 'Failed', 'Stopped', 'bad.service']
+    contains: ['"filters"', 'Failed', 'Exited', 'Dead', 'Other', 'bad.service']
     not_contains: ['Needs attention']

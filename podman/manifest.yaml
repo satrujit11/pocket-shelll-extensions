@@ -6,7 +6,7 @@ name: Podman
 description: "Containers, images, volumes and networks of Podman: state, resource use, logs, a shell, start, stop, restart, pause and remove."
 icon: podman
 category: containers
-version: 2.0.0
+version: 2.1.0
 author: Pocket Shell
 docs: https://docs.podman.io/en/latest/Commands.html
 logo: https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/podman/logo.svg
@@ -202,7 +202,9 @@ screens:
                 empty: There are no containers.
                 filters:
                   - { id: running, label: Running, where: "{{ row.State == 'running' }}" }
-                  - { id: stopped, label: Stopped, where: "{{ row.State != 'running' }}" }
+                  - { id: exited, label: Exited, where: "{{ row.State == 'exited' }}" }
+                  - { id: paused, label: Paused, where: "{{ row.State == 'paused' }}" }
+                  - { id: other, label: Other, where: "{{ row.State != 'running' && row.State != 'exited' && row.State != 'paused' }}" }
                 item:
                   title: "{{ (row.Names | first()) }}"
                   subtitle: "{{ row.Image }}"

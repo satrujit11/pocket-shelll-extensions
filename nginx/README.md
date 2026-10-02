@@ -2,7 +2,7 @@
 
 Web server status, enabled sites, config test, logs, reload and restart.
 
-`nginx` v1.1.0 · [Tool documentation](https://nginx.org/en/docs/)
+`nginx` v1.2.0 · [Tool documentation](https://nginx.org/en/docs/)
 
 ## Overview
 
@@ -38,8 +38,8 @@ Listed last because they are the fine print: the agent on the server runs all of
 | `data.configtest` | `nginx -t` | sudo |
 | `data.sites` | `ls -1 /etc/nginx/sites-enabled` | user |
 | `data.site` | `cat /etc/nginx/sites-enabled/{{ params.name }}` | sudo |
-| `data.errors` | `tail -n 300 /var/log/nginx/error.log` | sudo |
-| `data.access` | `tail -n 300 /var/log/nginx/access.log` | sudo |
+| `data.errors` | `tail -n {{ state.lines }} -F /var/log/nginx/error.log` (live) | sudo |
+| `data.access` | `tail -n {{ state.lines }} -F /var/log/nginx/access.log` (live) | sudo |
 
 **Changes**
 

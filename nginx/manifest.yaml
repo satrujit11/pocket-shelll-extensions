@@ -6,7 +6,7 @@ name: Nginx
 description: "Web server status, enabled sites, config test, logs, reload and restart."
 icon: web
 category: web
-version: 1.1.0
+version: 1.2.0
 author: Pocket Shell
 docs: https://nginx.org/en/docs/
 logo: https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/nginx/logo.svg
@@ -46,15 +46,17 @@ data:
     privilege: sudo
     refresh: manual
   errors:
-    run: [tail, -n, "300", /var/log/nginx/error.log]
+    run: [tail, -n, "{{ state.lines }}", -F, /var/log/nginx/error.log]
     parse: lines
+    stream: true
+    merge_stderr: true
     privilege: sudo
-    refresh: 5s
   access:
-    run: [tail, -n, "300", /var/log/nginx/access.log]
+    run: [tail, -n, "{{ state.lines }}", -F, /var/log/nginx/access.log]
     parse: lines
+    stream: true
+    merge_stderr: true
     privilege: sudo
-    refresh: 5s
 
 actions:
   test:
@@ -89,6 +91,8 @@ screens:
     subtitle: "{{ data.status.text | trim() }}"
     docs: https://nginx.org/en/docs/beginners_guide.html
     actions: [test, reload, restart]
+    state:
+      lines: { type: number, label: Lines, options: [100, 200, 500, 1000], default: 200 }
     tabs:
       - id: overview
         title: Overview
@@ -128,6 +132,7 @@ screens:
               - type: logs
                 follow: true
                 search: true
+                controls: [lines]
                 streams:
                   - { id: errors, label: Errors, from: errors, tone: danger }
                   - { id: access, label: Access, from: access }

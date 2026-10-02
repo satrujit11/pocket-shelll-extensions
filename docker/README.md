@@ -2,7 +2,7 @@
 
 Containers, images, volumes and networks of Docker: state, resource use, logs, a shell, start, stop, restart, pause and remove.
 
-`docker` v2.0.0 · [Tool documentation](https://docs.docker.com/reference/cli/docker/)
+`docker` v2.1.0 · [Tool documentation](https://docs.docker.com/reference/cli/docker/)
 
 ## Overview
 

@@ -2,7 +2,7 @@
 
 Containers, images, volumes and networks of Podman: state, resource use, logs, a shell, start, stop, restart, pause and remove.
 
-`podman` v2.0.0 · [Tool documentation](https://docs.podman.io/en/latest/Commands.html)
+`podman` v2.1.0 · [Tool documentation](https://docs.podman.io/en/latest/Commands.html)
 
 ## Overview
 

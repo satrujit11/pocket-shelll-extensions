@@ -20,7 +20,7 @@ fakes:
 checks:
   - name: the list shows every process with chips
     screen: main
-    contains: ['"3 processes"', '"api"', '50.0 M', 'errored', '"filters"', 'Not online']
+    contains: ['"3 processes"', '"api"', '50.0 M', 'errored', '"filters"', 'Stopped', 'Errored', 'Other']
   - name: a running process
     screen: detail
     params: { name: api }

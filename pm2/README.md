@@ -2,7 +2,7 @@
 
 Node processes managed by PM2: status, resource use, restarts, error and output logs, start, stop, restart, reload and delete.
 
-`pm2` v2.0.0 · [Tool documentation](https://pm2.keymetrics.io/docs/usage/quick-start/)
+`pm2` v2.1.0 · [Tool documentation](https://pm2.keymetrics.io/docs/usage/quick-start/)
 
 ## Overview
 

@@ -4,7 +4,7 @@ name: Kubernetes
 description: "Pods and nodes through kubectl: status, live logs, delete a pod."
 icon: cloud
 category: containers
-version: 1.1.0
+version: 1.2.0
 author: Pocket Shell
 docs: https://kubernetes.io/docs/reference/kubectl/
 logo: https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/kubernetes/logo.svg
@@ -96,6 +96,8 @@ screens:
                   - { id: running, label: Running, where: "{{ row.status.phase == 'Running' }}" }
                   - { id: pending, label: Pending, where: "{{ row.status.phase == 'Pending' }}" }
                   - { id: failed, label: Failed, where: "{{ row.status.phase == 'Failed' }}" }
+                  - { id: done, label: Completed, where: "{{ row.status.phase == 'Succeeded' }}" }
+                  - { id: other, label: Other, where: "{{ row.status.phase != 'Running' && row.status.phase != 'Pending' && row.status.phase != 'Failed' && row.status.phase != 'Succeeded' }}" }
                 item:
                   title: "{{ row.metadata.name }}"
                   subtitle: "{{ row.metadata.namespace }}"

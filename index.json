@@ -21,14 +21,14 @@
       "description": "Containers, images, volumes and networks of Docker: state, resource use, logs, a shell, start, stop, restart, pause and remove.",
       "icon": "docker",
       "category": "containers",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": "Pocket Shell",
       "docs": "https://docs.docker.com/reference/cli/docker/",
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/docker/logo.svg",
       "readme": "docker/README.md",
       "path": "docker/manifest.yaml",
-      "sha256": "5bdb7d14bf766ae77cdd110f722ea5b124a3bef855cae85889d3b5e9acc1d4ce",
-      "signature": "TIILVUFI8V7NGHlSOs9HcEgrG8FjZh/5xUIFXha6NfOgLAbnyBm8U/UmYvi3F7aqvoWhVJMl6pH95A1sUbvBBQ=="
+      "sha256": "d6fc4b2aab1a2e7d2635cfa3e230618f6eb89072761d972c890298fa1ca2a0f9",
+      "signature": "57/1MGTACr26nL0LTE7ZFHghCyCM09hEz5LxWW+rYEOvAhDw4KKqDDJoxNsd/UaEAEUmUk1DCUaijOxv3Iy5BQ=="
     },
     {
       "id": "kubernetes",
@@ -36,14 +36,14 @@
       "description": "Pods and nodes through kubectl: status, live logs, delete a pod.",
       "icon": "cloud",
       "category": "containers",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "author": "Pocket Shell",
       "docs": "https://kubernetes.io/docs/reference/kubectl/",
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/kubernetes/logo.svg",
       "readme": "kubernetes/README.md",
       "path": "kubernetes/manifest.yaml",
-      "sha256": "7ea8ccfdf55a9a21a1273145bb6ffcd51724f45096279e102a6fe0448a4656b2",
-      "signature": "k3WBKA1EgoKsVuQxWkHKLEpq+iWeiS+x8AiRHRt1siEyDtyUGIB0MPuxtdXbg65WXbL6BM6QBz52N4ccqEOoBw=="
+      "sha256": "62d8c9041f3b00d98a512d7d947d30252a482df7a65693438e95a69b788e771e",
+      "signature": "Qm/faO6oygVloVw2JRZXqJjCTPPWZg/YoNyIQsjrJdsTYaokBDTF2s0ofDLiFJgsp7Q30wpuX8Tktzf4mfj2BQ=="
     },
     {
       "id": "nginx",
@@ -51,14 +51,14 @@
       "description": "Web server status, enabled sites, config test, logs, reload and restart.",
       "icon": "web",
       "category": "web",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "author": "Pocket Shell",
       "docs": "https://nginx.org/en/docs/",
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/nginx/logo.svg",
       "readme": "nginx/README.md",
       "path": "nginx/manifest.yaml",
-      "sha256": "e8ab5f2699283cc39f2aabe7840eb21fe6b71d2cea78c71bf0a4dfe7cc5d063c",
-      "signature": "weq3Owf1J5otJA8O+rxgRAJpyZawFXcPdyzGSZ6h+K7wQD/q/BTKDhe4WrptrQt0lGYRX7Nc7Z97UnmtNTw4CA=="
+      "sha256": "705112867202385bc7686dca5ebfe9efa06ed4d88131215f25774b772b8558d6",
+      "signature": "52Y3ZZed8sNENFlnNKzX05eN018yhaQByywDWW6hhxFcK38YcnfxAZmMJJldYDpCZfxgwa2Edg06AawaapFXDA=="
     },
     {
       "id": "pm2",
@@ -66,14 +66,14 @@
       "description": "Node processes managed by PM2: status, resource use, restarts, error and output logs, start, stop, restart, reload and delete.",
       "icon": "pm2",
       "category": "processes",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": "Pocket Shell",
       "docs": "https://pm2.keymetrics.io/docs/usage/quick-start/",
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/pm2/logo.svg",
       "readme": "pm2/README.md",
       "path": "pm2/manifest.yaml",
-      "sha256": "0a22678af546093d6b6e841f3cae4ff51f521b660ce71de7cae383aef1981510",
-      "signature": "NbJ6KNjsIf/Gs7lK92qxp/k7o2YJ5XoXMjZ1GRY9lm9FwcbHchNrbsddcwJ8yrsZkpDVq2Zsp2EPv1z1UbjUDw=="
+      "sha256": "a5759862c13be4fdc39f5f3659cefe5427ebebdef2046a1dfd4cb729487cefe2",
+      "signature": "3YbQhQ+Ha8iZTjMLJevGOkNBnuXuhfBqqsNI3C7dnIqH4IcsgmbCZrxoz2gGNQ8zSYcSRVGnjnUy9wXOdn2rAA=="
     },
     {
       "id": "podman",
@@ -81,14 +81,14 @@
       "description": "Containers, images, volumes and networks of Podman: state, resource use, logs, a shell, start, stop, restart, pause and remove.",
       "icon": "podman",
       "category": "containers",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": "Pocket Shell",
       "docs": "https://docs.podman.io/en/latest/Commands.html",
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/podman/logo.svg",
       "readme": "podman/README.md",
       "path": "podman/manifest.yaml",
-      "sha256": "ad2b5382ad956998558daa8ebef59d85b2064a594b890c9c3adbf0a80917477b",
-      "signature": "K3Z5C5b6wG0oNDTFGUrnfu0hSzZnQCq8T46mCIRhI6dyEBkwklb8o1Wv0R2cY5uWtb3q8r+2EZUHGcuU/7C0CQ=="
+      "sha256": "cb5cee717a63bdb519cafebb4768a2704900cecd29e572583994e64be4f3a2fa",
+      "signature": "G4wWf7NlQQh8EPnYHJxE2zbgGU3c5Qu2soM/zS6YPOCsD4PfuEq2vGB59ZoQggxwqqYoZ7+gfcGhEoFAD+VsDg=="
     },
     {
       "id": "redis",
@@ -111,13 +111,13 @@
       "description": "Programs managed by supervisord: state, start, stop, restart.",
       "icon": "process",
       "category": "processes",
-      "version": "1.1.0",
+      "version": "1.3.0",
       "author": "Pocket Shell",
       "docs": "http://supervisord.org/running.html#supervisorctl-command-line-options",
       "readme": "supervisor/README.md",
       "path": "supervisor/manifest.yaml",
-      "sha256": "7580f448c06acb3af87a2307e87f15f32d5ba4469c29dcb4d3e72687f04330b9",
-      "signature": "sDbiMOYE1qJIRsc715MXARxLvjqhlsugMw7O1tsocuUAsdLDbDpUIUcEC6Ns2bErR2nhMkU8VoAE3XQpdUi2Dw=="
+      "sha256": "d742ac529dd6ff22c4ae4ffb2699d3d443279981360126441d75466277a42a60",
+      "signature": "QWJtmDoDtzpdxci8+auW1yVC2oPPCE9QSa6nMZ1XLY/6Jw3Ap9HW50augFGJcZH7T+7xYFxQGA1do1T8oh+ZDA=="
     },
     {
       "id": "systemd",
@@ -125,13 +125,13 @@
       "description": "systemd services: what runs, what failed, logs, start, stop and restart.",
       "icon": "server",
       "category": "system",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "author": "Pocket Shell",
       "docs": "https://www.freedesktop.org/software/systemd/man/latest/systemctl.html",
       "readme": "systemd/README.md",
       "path": "systemd/manifest.yaml",
-      "sha256": "6b5fa48baafe36bba79b1d7571498c3b53e46615c4b24ef315afe33b6b8574c6",
-      "signature": "42trJPOGlt6XdKm+OJ8WIgFrp2PThJfAR/QADFSzy5NGuSP9TkPBzd5guHEV1IZ61m6JUteazG7arcO/N8SFBQ=="
+      "sha256": "4cb122cffc6bc5be0560dc86dff0a94bd148c710b3b30a357a280fed44ff21c9",
+      "signature": "Itd13cWCzgmcpIIajIspRoVpvvY9MJDw88YYgGYNz3xQVZsUzyyDzwMLhrKkhtn1UkTDhyIxy2gILMzloyTRCg=="
     },
     {
       "id": "ufw",
@@ -150,5 +150,5 @@
   ],
   "name": "Pocket Shell extensions",
   "spec": "pocketshell.registry/v0",
-  "updated": "2026-10-02T06:38:45Z"
+  "updated": "2026-10-02T07:36:48Z"
 }

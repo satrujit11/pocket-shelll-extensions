@@ -2,7 +2,7 @@
 
 Programs managed by supervisord: state, start, stop, restart.
 
-`supervisor` v1.1.0 · [Tool documentation](http://supervisord.org/running.html#supervisorctl-command-line-options)
+`supervisor` v1.3.0 · [Tool documentation](http://supervisord.org/running.html#supervisorctl-command-line-options)
 
 ## Overview
 
@@ -36,8 +36,8 @@ Listed last because they are the fine print: the agent on the server runs all of
 |---|---|---|
 | `data.programs` | `supervisorctl status` | sudo |
 | `data.program` | `supervisorctl status {{ params.name }}` | sudo |
-| `data.logs` | `supervisorctl tail {{ params.name }}` | sudo |
-| `data.errlogs` | `supervisorctl tail {{ params.name }} stderr` | sudo |
+| `data.logs` | `supervisorctl tail -f {{ params.name }}` (live) | sudo |
+| `data.errlogs` | `supervisorctl tail -f {{ params.name }} stderr` (live) | sudo |
 
 **Changes**
 

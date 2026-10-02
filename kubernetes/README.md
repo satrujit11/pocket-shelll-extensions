@@ -2,7 +2,7 @@
 
 Pods and nodes through kubectl: status, live logs, delete a pod.
 
-`kubernetes` v1.1.0 · [Tool documentation](https://kubernetes.io/docs/reference/kubectl/)
+`kubernetes` v1.2.0 · [Tool documentation](https://kubernetes.io/docs/reference/kubectl/)
 
 ## Overview
 

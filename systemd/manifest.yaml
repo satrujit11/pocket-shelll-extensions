@@ -6,7 +6,7 @@ name: Services
 description: "systemd services: what runs, what failed, logs, start, stop and restart."
 icon: server
 category: system
-version: 1.1.0
+version: 1.2.0
 author: Pocket Shell
 docs: https://www.freedesktop.org/software/systemd/man/latest/systemctl.html
 license: Apache-2.0
@@ -100,8 +100,8 @@ screens:
             value: "{{ data.units | where(row.active == 'failed') | count() }}"
             tone: danger
           - type: stat
-            label: Stopped
-            value: "{{ data.units | where(row.sub == 'dead') | count() }}"
+            label: Exited
+            value: "{{ data.units | where(row.sub == 'exited') | count() }}"
             tone: muted
       - components:
           - type: list
@@ -112,7 +112,9 @@ screens:
             filters:
               - { id: failed, label: Failed, where: "{{ row.active == 'failed' }}" }
               - { id: running, label: Running, where: "{{ row.sub == 'running' }}" }
-              - { id: stopped, label: Stopped, where: "{{ row.sub == 'dead' }}" }
+              - { id: exited, label: Exited, where: "{{ row.sub == 'exited' }}" }
+              - { id: dead, label: Dead, where: "{{ row.sub == 'dead' }}" }
+              - { id: other, label: Other, where: "{{ row.active != 'failed' && row.sub != 'running' && row.sub != 'exited' && row.sub != 'dead' }}" }
             item:
               title: "{{ row.unit }}"
               subtitle: "{{ row.description }}"

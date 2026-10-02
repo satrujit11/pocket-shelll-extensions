@@ -6,7 +6,7 @@ name: PM2
 description: "Node processes managed by PM2: status, resource use, restarts, error and output logs, start, stop, restart, reload and delete."
 icon: pm2
 category: processes
-version: 2.0.0
+version: 2.1.0
 author: Pocket Shell
 docs: https://pm2.keymetrics.io/docs/usage/quick-start/
 logo: https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/pm2/logo.svg
@@ -131,7 +131,9 @@ screens:
             empty: PM2 has no processes.
             filters:
               - { id: online, label: Online, where: "{{ row.pm2_env.status == 'online' }}" }
-              - { id: down, label: Not online, where: "{{ row.pm2_env.status != 'online' }}" }
+              - { id: stopped, label: Stopped, where: "{{ row.pm2_env.status == 'stopped' }}" }
+              - { id: errored, label: Errored, where: "{{ row.pm2_env.status == 'errored' }}" }
+              - { id: other, label: Other, where: "{{ row.pm2_env.status != 'online' && row.pm2_env.status != 'stopped' && row.pm2_env.status != 'errored' }}" }
             item:
               title: "{{ row.name }}"
               subtitle: "{{ row.monit.memory | bytes() }} · {{ row.monit.cpu }}% cpu · {{ row.pm2_env.restart_time }} restarts"
