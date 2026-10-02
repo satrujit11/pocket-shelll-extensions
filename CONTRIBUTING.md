@@ -35,7 +35,7 @@ Every extension needs at least one fixture. A fixture names fake programs that p
 
 ## Ids
 
-`docker`, `podman` and `pm2` belong to the extensions built into the agent. A manifest-only version uses another id (`docker-lite`).
+`docker`, `podman` and `pm2` also ship with the agent. If you change one of them, copy the new `manifest.yaml` to `internal/extensions/builtin/` in pocket-shell-cli: a test fails when the two differ.
 
 ## Style
 

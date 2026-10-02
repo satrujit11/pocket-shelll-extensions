@@ -30,7 +30,7 @@ The private key is never committed (`*.key` is in `.gitignore`). The public key 
 When someone adds an extension from the registry:
 
 1. The app downloads `manifest.yaml` and checks it against the index's SHA-256.
-2. The server's agent previews it: it validates it, rejects an id that belongs to a built-in extension, and lists every command and script. The person sees all of it before choosing **Add to this server**.
+2. The server's agent previews it: it validates it, rejects an id the server already lists, and lists every command and script. The person sees all of it before choosing **Add to this server**.
 3. The agent checks the checksum and, when the app pinned a key and the entry is signed, the signature, and only then writes the file.
 4. The extension is stored as a file on that server (`~/.pocket_shell/extensions/`) and listed in that server's database. Editing the file later shows a "Modified" badge.
 

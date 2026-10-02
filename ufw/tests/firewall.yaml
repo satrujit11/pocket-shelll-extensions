@@ -30,10 +30,10 @@ checks:
     contains: ['active', 'deny (incoming)', 'on (low)', '22/tcp', '23/tcp', 'DENY IN']
     offers: [allow, deny, disable]
     not_offers: [enable]
-  - screen: rule
-    params: { n: "3" }
-    contains: ['Rule 3', '23/tcp', '10.0.0.0/8']
-    offers: [delete-rule]
+  - name: one page holds the rules and each rule has its own delete button
+    screen: main
+    contains: ['Rules', 'Defaults', '10.0.0.0/8']
+    not_contains: ['Rule 3']
   - name: allow builds the port rule
     action: allow
     screen: main
@@ -46,12 +46,12 @@ checks:
     refused: at most
   - name: deleting asks first
     action: delete-rule
-    screen: rule
+    screen: main
     params: { n: "3" }
     refused: confirmed
   - name: delete runs
     action: delete-rule
-    screen: rule
+    screen: main
     params: { n: "3" }
     confirmed: true
     ran: ["ufw --force delete 3"]

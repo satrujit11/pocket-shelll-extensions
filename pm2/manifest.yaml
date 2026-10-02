@@ -1,12 +1,12 @@
-# PM2, written only as a manifest: the process list with status and numbers,
-# a detail screen and restart / stop / start / delete.
+# PM2: processes with status, resource use, restarts, error and output logs, and
+# control. Nothing here is built into the app: this is what any extension can do.
 spec: pocketshell.ext/v0
-id: pm2-lite
-name: PM2 (manifest)
-description: "Node processes managed by PM2: status, memory, restarts, and control."
+id: pm2
+name: PM2
+description: "Node processes managed by PM2: status, resource use, restarts, error and output logs, start, stop, restart, reload and delete."
 icon: pm2
 category: processes
-version: 1.0.0
+version: 2.0.0
 author: Pocket Shell
 docs: https://pm2.keymetrics.io/docs/usage/quick-start/
 logo: https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/pm2/logo.svg
@@ -16,42 +16,76 @@ detect:
   binaries: [pm2]
   version_args: [--version]
 
+requires: [properties, tree, controls, streams, filters, state]
 permissions: [read-processes, control-processes]
 
+errors:
+  - match: "command not found|not found"
+    title: PM2 is not installed for this user
+    text: PM2 keeps a separate process list per user. Open this server as the user that runs your apps.
+    docs: https://pm2.keymetrics.io/docs/usage/quick-start/
+
 data:
-  logs:
-    params: [name]
-    run: [pm2, logs, "{{ params.name }}", --lines, "100", --raw]
-    parse: lines
-    stream: true
-    merge_stderr: true
   procs:
     run: [pm2, jlist]
     parse: json
     path: $
     refresh: 5s
     timeout: 10s
+    history: 30
+  envvars:
+    when: "{{ state.env == true }}"
+    run: [pm2, jlist]
+    parse: json
+    path: $
+    timeout: 10s
+  out:
+    params: [name]
+    run: [tail, -n, "{{ state.lines }}", -F, "{{ (data.procs | where(row.name == params.name) | first()).pm2_env.pm_out_log_path }}"]
+    parse: lines
+    stream: true
+    merge_stderr: true
+  err:
+    params: [name]
+    run: [tail, -n, "{{ state.lines }}", -F, "{{ (data.procs | where(row.name == params.name) | first()).pm2_env.pm_err_log_path }}"]
+    parse: lines
+    stream: true
+    merge_stderr: true
 
 actions:
+  start:
+    label: Start
+    icon: play
+    style: primary
+    visible: "{{ (data.procs | where(row.name == params.name) | first()).pm2_env.status != 'online' }}"
+    run: [pm2, start, "{{ params.name }}"]
+    after: [{ refresh: procs }]
   restart:
     label: Restart
     icon: restart
+    visible: "{{ (data.procs | where(row.name == params.name) | first()).pm2_env.status == 'online' }}"
     run: [pm2, restart, "{{ params.name }}"]
     confirm: { title: "Restart {{ params.name }}?", text: It is unavailable for a moment. }
+    after: [{ refresh: procs }]
+  reload:
+    label: Reload (no downtime)
+    icon: restart
+    visible: "{{ (data.procs | where(row.name == params.name) | first()).pm2_env.exec_mode == 'cluster_mode' }}"
+    run: [pm2, reload, "{{ params.name }}"]
     after: [{ refresh: procs }]
   stop:
     label: Stop
     icon: stop
     style: danger
+    visible: "{{ (data.procs | where(row.name == params.name) | first()).pm2_env.status == 'online' }}"
     run: [pm2, stop, "{{ params.name }}"]
     confirm: { title: "Stop {{ params.name }}?", text: It stays stopped until you start it. }
     after: [{ refresh: procs }]
-  start:
-    label: Start
-    icon: play
-    style: primary
-    run: [pm2, start, "{{ params.name }}"]
-    after: [{ refresh: procs }]
+  flush:
+    label: Clear its logs
+    icon: trash
+    run: [pm2, flush, "{{ params.name }}"]
+    confirm: { title: "Clear the logs of {{ params.name }}?", text: The error and output log files are emptied. }
   delete:
     label: Delete
     icon: trash
@@ -62,53 +96,61 @@ actions:
       text: It is removed from the PM2 list.
       type_to_confirm: "{{ params.name }}"
     after: [{ refresh: procs }]
+  save:
+    label: Save the list
+    icon: check
+    run: [pm2, save]
+    result: output
 
 screens:
   main:
     title: Processes
     subtitle: "{{ data.procs | count() }} processes"
-    tabs:
-      - id: overview
-        title: Overview
-        sections:
-          - layout: { columns: 3 }
-            components:
-              - type: stat
-                label: Online
-                value: "{{ data.procs | where(row.pm2_env.status == 'online') | count() }}"
-                tone: success
-              - type: stat
-                label: Stopped
-                value: "{{ data.procs | where(row.pm2_env.status == 'stopped') | count() }}"
-                tone: muted
-              - type: stat
-                label: Errored
-                value: "{{ data.procs | where(row.pm2_env.status == 'errored') | count() }}"
-                tone: danger
-      - id: all
-        title: All
-        sections:
-          - components:
-              - type: list
-                from: procs
-                search: true
-                sort: name
-                empty: PM2 has no processes.
-                item:
-                  title: "{{ row.name }}"
-                  subtitle: "{{ row.monit.memory | bytes() }} · {{ row.monit.cpu }}% cpu · {{ row.pm2_env.restart_time }} restarts"
-                  trailing: "{{ row.pm2_env.status }}"
-                  tone: "{{ row.pm2_env.status == 'online' ? 'success' : 'danger' }}"
-                on_tap: { screen: detail, params: { name: "{{ row.name }}" } }
+    docs: https://pm2.keymetrics.io/docs/usage/process-management/
+    actions: [save]
+    sections:
+      - layout: { columns: 3 }
+        components:
+          - type: stat
+            label: Online
+            value: "{{ data.procs | where(row.pm2_env.status == 'online') | count() }}"
+            tone: success
+          - type: stat
+            label: Stopped
+            value: "{{ data.procs | where(row.pm2_env.status == 'stopped') | count() }}"
+            tone: muted
+          - type: stat
+            label: Errored
+            value: "{{ data.procs | where(row.pm2_env.status == 'errored') | count() }}"
+            tone: danger
+      - components:
+          - type: list
+            from: procs
+            search: true
+            sort: name
+            empty: PM2 has no processes.
+            filters:
+              - { id: online, label: Online, where: "{{ row.pm2_env.status == 'online' }}" }
+              - { id: down, label: Not online, where: "{{ row.pm2_env.status != 'online' }}" }
+            item:
+              title: "{{ row.name }}"
+              subtitle: "{{ row.monit.memory | bytes() }} · {{ row.monit.cpu }}% cpu · {{ row.pm2_env.restart_time }} restarts"
+              trailing: "{{ row.pm2_env.status }}"
+              tone: "{{ row.pm2_env.status == 'online' ? 'success' : (row.pm2_env.status == 'stopped' ? 'muted' : 'danger') }}"
+            on_tap: { screen: detail, params: { name: "{{ row.name }}" } }
+
   detail:
     params: [name]
     docs: https://pm2.keymetrics.io/docs/usage/process-management/
     title: "{{ params.name }}"
     subtitle: "{{ (data.procs | where(row.name == params.name) | first()).pm2_env.status }}"
-    actions: [start, restart, stop, delete]
+    actions: [start, restart, reload, stop, flush, delete]
+    state:
+      env: { type: toggle, label: Show environment variables, auth: true, default: false }
+      lines: { type: number, label: Lines, options: [100, 200, 500, 1000], default: 200 }
     tabs:
-      - id: status
-        title: Status
+      - id: overview
+        title: Overview
         sections:
           - layout: { columns: 2 }
             components:
@@ -126,11 +168,49 @@ screens:
               - type: stat
                 label: Restarts
                 value: "{{ (data.procs | where(row.name == params.name) | first()).pm2_env.restart_time }}"
+          - components:
+              - type: properties
+                value: "{{ data.procs | where(row.name == params.name) | first() }}"
+                groups:
+                  - title: Process
+                    fields:
+                      - { label: PM2 id, path: pm_id }
+                      - { label: PID, path: pid }
+                      - { label: Script, path: pm2_env.pm_exec_path, copy: true, mono: true }
+                      - { label: Working dir, path: pm2_env.pm_cwd, copy: true, mono: true }
+                      - { label: Arguments, path: pm2_env.args, format: list, hide_empty: true }
+                      - { label: Mode, path: pm2_env.exec_mode }
+                      - { label: Instances, path: pm2_env.instances, hide_empty: true }
+                  - title: Runtime
+                    fields:
+                      - { label: Node, path: pm2_env.node_version, hide_empty: true }
+                      - { label: App version, path: pm2_env.version, hide_empty: true }
+                      - { label: Unstable restarts, path: pm2_env.unstable_restarts }
+                      - { label: Uptime since, path: pm2_env.pm_uptime, format: ago, hide_empty: true }
+                      - { label: Created, path: pm2_env.created_at, format: ago, hide_empty: true }
+                  - title: Log files
+                    fields:
+                      - { label: Output, path: pm2_env.pm_out_log_path, copy: true, mono: true }
+                      - { label: Errors, path: pm2_env.pm_err_log_path, copy: true, mono: true }
+          - title: Environment
+            collapsible: true
+            components:
+              - type: controls
+                items: [env]
+              - type: tree
+                visible: "{{ state.env == true }}"
+                value: "{{ (data.envvars | where(row.name == params.name) | first()).pm2_env.env }}"
       - id: logs
         title: Logs
         sections:
           - components:
               - type: logs
-                from: logs
                 follow: true
                 search: true
+                controls: [lines]
+                streams:
+                  - { id: out, label: Output, from: out }
+                  - { id: err, label: Errors, from: err, tone: danger }
+                levels:
+                  - { match: "error|fatal|exception|unhandled", level: error }
+                  - { match: "warn", level: warn }

@@ -74,47 +74,35 @@ screens:
   main:
     title: Firewall
     subtitle: "{{ data.status.Status }}"
-    actions: [allow, deny, enable, disable]
-    tabs:
-      - id: status
-        title: Status
-        sections:
-          - layout: { columns: 2 }
-            components:
-              - type: stat
-                label: Firewall
-                value: "{{ data.status.Status }}"
-                tone: "{{ data.status.Status == 'active' ? 'success' : 'danger' }}"
-              - type: stat
-                label: Rules
-                value: "{{ data.rules | count() }}"
-          - title: Defaults
-            components:
-              - type: keyvalue
-                items:
-                  - { label: Default policy, value: "{{ data.status.Default }}" }
-                  - { label: Logging, value: "{{ data.status.Logging }}" }
-      - id: rules
-        title: Rules
-        badge: "{{ data.rules | count() }}"
-        sections:
-          - components:
-              - type: list
-                from: rules
-                search: true
-                empty: There are no rules.
-                item:
-                  title: "{{ row.to }}"
-                  subtitle: "{{ row.action }} from {{ row.from }}"
-                  badge: "{{ row.n }}"
-                  tone: "{{ row.action == 'ALLOW' || row.action == 'ALLOW IN' ? 'success' : 'danger' }}"
-                on_tap: { screen: rule, params: { n: "{{ row.n }}" } }
-  rule:
-    params: [n]
     docs: https://help.ubuntu.com/community/UFW
-    title: "Rule {{ params.n }}"
-    actions: [delete-rule]
+    actions: [allow, deny, enable, disable]
     sections:
-      - components:
-          - type: text
-            value: "{{ (data.rules | where(row.n == params.n) | first()).to }}  {{ (data.rules | where(row.n == params.n) | first()).action }}  {{ (data.rules | where(row.n == params.n) | first()).from }}"
+      - layout: { columns: 2 }
+        components:
+          - type: stat
+            label: Firewall
+            value: "{{ data.status.Status }}"
+            tone: "{{ data.status.Status == 'active' ? 'success' : 'danger' }}"
+          - type: stat
+            label: Rules
+            value: "{{ data.rules | count() }}"
+      - title: Rules
+        components:
+          - type: list
+            from: rules
+            search: true
+            empty: There are no rules.
+            item:
+              title: "{{ row.to }}"
+              subtitle: "{{ row.action }} from {{ row.from }}"
+              badge: "{{ row.n }}"
+              tone: "{{ row.action == 'ALLOW' || row.action == 'ALLOW IN' ? 'success' : 'danger' }}"
+              actions:
+                - { action: delete-rule, with: { n: "{{ row.n }}" } }
+      - title: Defaults
+        collapsible: true
+        components:
+          - type: keyvalue
+            items:
+              - { label: Default policy, value: "{{ data.status.Default }}" }
+              - { label: Logging, value: "{{ data.status.Logging }}" }

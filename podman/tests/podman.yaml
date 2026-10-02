@@ -1,0 +1,47 @@
+name: containers, images, volumes, networks, detail and actions (Podman prints JSON arrays)
+fakes:
+  podman: |
+    case "$1 $2" in
+      "--version "*) echo "podman version 4.9.3" ;;
+      "ps -a") cat <<'EOF'
+    [
+     {"Id":"aaa111","Names":["web"],"Image":"docker.io/library/nginx:1","State":"running","Status":"Up 2 hours"},
+     {"Id":"bbb222","Names":["db"],"Image":"docker.io/library/postgres:16","State":"exited","Status":"Exited (0) 1 hour ago"}
+    ]
+    EOF
+      ;;
+      "images --format") echo '[{"Id":"img1","Names":["docker.io/library/nginx:1"],"Size":187000000,"Created":1767225600}]' ;;
+      "volume ls") echo '[{"Name":"pgdata","Driver":"local","Mountpoint":"/home/u/.local/share/containers/storage/volumes/pgdata/_data"}]' ;;
+      "network ls") echo '[{"name":"podman","id":"net1","driver":"bridge"}]' ;;
+      "inspect aaa111") echo '[{"Id":"aaa111full","Name":"web","ImageName":"docker.io/library/nginx:1","RestartCount":2,"State":{"Status":"running","Running":true,"Paused":false,"Pid":77,"StartedAt":"2026-01-01T00:00:00Z"},"Config":{"Env":["TOKEN=secret"]},"Mounts":[{"Source":"/srv","Destination":"/data","Type":"bind"}]}]' ;;
+      "inspect bbb222") echo '[{"Id":"bbb222full","Name":"db","ImageName":"docker.io/library/postgres:16","State":{"Status":"exited","Running":false}}]' ;;
+      "stats --no-stream") echo '[{"cpu_percent":"2.5%","mem_usage":"30MB / 2GB"}]' ;;
+      "logs --tail") echo "starting"; echo "ERROR: boom" ;;
+      "image inspect") echo '[{"Id":"img1full","RepoTags":["docker.io/library/nginx:1"],"Size":187000000,"Created":"2026-01-01T00:00:00Z","Os":"linux","Architecture":"amd64"}]' ;;
+    esac
+checks:
+  - name: every kind of thing is on the main page
+    screen: main
+    contains: ['"web"', 'nginx:1', 'pgdata', 'podman']
+    offers: [prune-images]
+  - name: a running container
+    screen: container
+    params: { id: aaa111 }
+    contains: ['"web"', 'docker.io/library/nginx:1', '2.5%', '/data', 'ERROR: boom']
+    not_contains: ['TOKEN=secret']
+    offers: [stop, restart, pause, shell]
+    not_offers: [start, remove]
+  - name: a stopped one
+    screen: container
+    params: { id: bbb222 }
+    offers: [start, remove]
+  - name: an image
+    screen: image
+    params: { id: img1 }
+    contains: ['amd64']
+  - name: stop runs podman stop
+    action: stop
+    screen: container
+    params: { id: aaa111 }
+    confirmed: true
+    ran: ["podman stop aaa111"]

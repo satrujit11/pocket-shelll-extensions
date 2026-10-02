@@ -1,8 +1,8 @@
-# <img src="logo.svg" alt="" width="48" align="left"> PM2 (manifest)
+# <img src="logo.svg" alt="" width="48" align="left"> PM2
 
-Node processes managed by PM2: status, memory, restarts, and control.
+Node processes managed by PM2: status, resource use, restarts, error and output logs, start, stop, restart, reload and delete.
 
-`pm2-lite` v1.0.0 · [Tool documentation](https://pm2.keymetrics.io/docs/usage/quick-start/)
+`pm2` v2.0.0 · [Tool documentation](https://pm2.keymetrics.io/docs/usage/quick-start/)
 
 ## Overview
 
@@ -15,17 +15,20 @@ Node processes managed by PM2: status, memory, restarts, and control.
 
 ## What you see
 
-- **main** - Processes (tabs: Overview, All)
-- **detail** (tabs: Status, Logs)
+- **main** - Processes
+- **detail** (tabs: Overview, Logs)
 
 ## Buttons
 
 | Button | Safety | Notes |
 |---|---|---|
-| **Restart** | normal | asks first |
-| **Stop** | dangerous | asks first |
 | **Start** | normal | - |
+| **Restart** | normal | asks first |
+| **Reload (no downtime)** | normal | - |
+| **Stop** | dangerous | asks first |
+| **Clear its logs** | normal | asks first |
 | **Delete** | dangerous | asks first, you type the name |
+| **Save the list** | normal | - |
 
 ## Commands it can run
 
@@ -35,17 +38,22 @@ Listed last because they are the fine print: the agent on the server runs all of
 
 | Where | Command | As |
 |---|---|---|
-| `data.logs` | `pm2 logs {{ params.name }} --lines 100 --raw` (live) | user |
 | `data.procs` | `pm2 jlist` | user |
+| `data.envvars` | `pm2 jlist` | user |
+| `data.out` | `tail -n {{ state.lines }} -F {{ (data.procs | where(row.name == params.name) | first()).pm2_env.pm_out_log_path }}` (live) | user |
+| `data.err` | `tail -n {{ state.lines }} -F {{ (data.procs | where(row.name == params.name) | first()).pm2_env.pm_err_log_path }}` (live) | user |
 
 **Changes**
 
 | Where | Command | As |
 |---|---|---|
-| `actions.restart` | `pm2 restart {{ params.name }}` | user |
-| `actions.stop` | `pm2 stop {{ params.name }}` | user |
 | `actions.start` | `pm2 start {{ params.name }}` | user |
+| `actions.restart` | `pm2 restart {{ params.name }}` | user |
+| `actions.reload` | `pm2 reload {{ params.name }}` | user |
+| `actions.stop` | `pm2 stop {{ params.name }}` | user |
+| `actions.flush` | `pm2 flush {{ params.name }}` | user |
 | `actions.delete` | `pm2 delete {{ params.name }}` | user |
+| `actions.save` | `pm2 save` | user |
 
 ## Test it
 

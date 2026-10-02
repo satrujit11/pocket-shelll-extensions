@@ -1,15 +1,12 @@
-# Docker, written only as a manifest: containers with tabs, a detail screen with
-# live logs, and start / stop / restart / remove. It needs Docker 23 or newer
-# (`--format json`). The built-in Docker extension still opens the app's native
-# screens, which also have a shell and resource graphs; this shows what a
-# manifest alone can do.
+# Docker: containers, images, volumes and networks, written only as a manifest.
+# Nothing here is built into the app: this is what any extension can do.
 spec: pocketshell.ext/v0
-id: docker-lite
-name: Docker (manifest)
-description: "Containers of the Docker engine: state, logs, start, stop, restart, remove."
+id: docker
+name: Docker
+description: "Containers, images, volumes and networks of Docker: state, resource use, logs, a shell, start, stop, restart, pause and remove."
 icon: docker
 category: containers
-version: 1.0.0
+version: 2.0.0
 author: Pocket Shell
 docs: https://docs.docker.com/reference/cli/docker/
 logo: https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/docker/logo.svg
@@ -19,25 +16,73 @@ detect:
   binaries: [docker]
   version_args: [--version]
 
-permissions: [read-containers, control-containers]
+requires: [properties, tree, controls, terminal, sheet, streams, filters, row-actions, state]
+permissions: [read-containers, control-containers, open-shell]
+
+errors:
+  - match: "permission denied|Got permission denied"
+    title: "Docker refuses this user"
+    text: "Add the user to the docker group, or open this server as root."
+    docs: https://docs.docker.com/reference/cli/docker/
+  - match: "Cannot connect to the Docker daemon|Is the docker daemon running|cannot connect to Podman"
+    title: "Docker is not running"
+    text: "Start the service (for example systemctl start docker) and open this screen again."
 
 data:
   containers:
     run: [docker, ps, -a, --no-trunc, --format, json]
     parse: jsonl
     refresh: 5s
+  images:
+    run: [docker, images, --format, json]
+    parse: jsonl
+    refresh: 15s
+  volumes:
+    run: [docker, volume, ls, --format, json]
+    parse: jsonl
+    refresh: 15s
+  networks:
+    run: [docker, network, ls, --format, json]
+    parse: jsonl
+    refresh: 15s
   container:
     params: [id]
     run: [docker, inspect, "{{ params.id }}"]
     parse: json
     path: "$[0]"
     refresh: 5s
+  stats:
+    params: [id]
+    run: [docker, stats, --no-stream, --format, json, "{{ params.id }}"]
+    parse: jsonl
+    refresh: 5s
+  env:
+    params: [id]
+    when: "{{ state.env == true }}"
+    run: [docker, inspect, "{{ params.id }}"]
+    parse: json
+    path: "$[0].Config.Env"
   logs:
     params: [id]
-    run: [docker, logs, --tail, "200", --follow, "{{ params.id }}"]
+    run: [docker, logs, --tail, "{{ state.lines }}", --follow, "{{ params.id }}"]
     parse: lines
     stream: true
     merge_stderr: true
+  image:
+    params: [id]
+    run: [docker, image, inspect, "{{ params.id }}"]
+    parse: json
+    path: "$[0]"
+  volume:
+    params: [name]
+    run: [docker, volume, inspect, "{{ params.name }}"]
+    parse: json
+    path: "$[0]"
+  network:
+    params: [id]
+    run: [docker, network, inspect, "{{ params.id }}"]
+    parse: json
+    path: "$[0]"
 
 actions:
   start:
@@ -53,19 +98,32 @@ actions:
     style: danger
     visible: "{{ data.container.State.Running == true }}"
     run: [docker, stop, "{{ params.id }}"]
-    confirm:
-      title: "Stop this container?"
-      text: Whatever it serves goes offline until it is started again.
+    confirm: { title: "Stop this container?", text: Whatever it serves goes offline until it is started again. }
     after: [{ refresh: containers }, { refresh: container }]
   restart:
     label: Restart
     icon: restart
     visible: "{{ data.container.State.Running == true }}"
     run: [docker, restart, "{{ params.id }}"]
-    confirm:
-      title: "Restart this container?"
-      text: It is unavailable for a moment.
+    confirm: { title: "Restart this container?", text: It is unavailable for a moment. }
     after: [{ refresh: containers }, { refresh: container }]
+  pause:
+    label: Pause
+    icon: pause
+    visible: "{{ data.container.State.Running == true && data.container.State.Paused != true }}"
+    run: [docker, pause, "{{ params.id }}"]
+    after: [{ refresh: container }]
+  unpause:
+    label: Unpause
+    icon: play
+    visible: "{{ data.container.State.Paused == true }}"
+    run: [docker, unpause, "{{ params.id }}"]
+    after: [{ refresh: container }]
+  shell:
+    label: Open a shell
+    icon: terminal
+    visible: "{{ data.container.State.Running == true }}"
+    terminal: [docker, exec, -it, "{{ params.id }}", /bin/sh]
   remove:
     label: Remove
     icon: trash
@@ -77,14 +135,45 @@ actions:
       text: The container is deleted. Its volumes are kept.
       type_to_confirm: "{{ data.container.Name | replace('/', '') }}"
     after: [{ refresh: containers }]
+  remove-image:
+    label: Remove
+    icon: trash
+    style: danger
+    run: [docker, rmi, "{{ params.id }}"]
+    confirm: { title: "Remove this image?", text: "It fails if a container still uses it." }
+    after: [{ refresh: images }]
+  remove-volume:
+    label: Remove
+    icon: trash
+    style: danger
+    run: [docker, volume, rm, "{{ params.name }}"]
+    confirm: { title: "Remove this volume?", text: Its data is deleted for good. }
+    after: [{ refresh: volumes }]
+  remove-network:
+    label: Remove
+    icon: trash
+    style: danger
+    run: [docker, network, rm, "{{ params.id }}"]
+    confirm: { title: "Remove this network?", text: "It fails if a container is attached." }
+    after: [{ refresh: networks }]
+  prune-images:
+    label: Remove unused images
+    icon: trash
+    style: danger
+    run: [docker, image, prune, -f]
+    confirm: { title: "Remove unused images?", text: Images that no container uses are deleted., type_to_confirm: prune }
+    after: [{ refresh: images }]
 
 screens:
   main:
-    title: Containers
-    subtitle: "{{ data.containers | count() }} containers"
+    title: Docker
+    subtitle: "{{ data.containers | where(row.State == 'running') | count() }} running"
+    docs: https://docs.docker.com/reference/cli/docker/
+    actions: [prune-images]
     tabs:
-      - id: overview
-        title: Overview
+      - id: containers
+        title: Containers
+        badge: "{{ data.containers | count() }}"
         sections:
           - layout: { columns: 3 }
             components:
@@ -100,45 +189,79 @@ screens:
                 label: Other
                 value: "{{ data.containers | where(row.State != 'running' && row.State != 'exited') | count() }}"
                 tone: warning
-      - id: running
-        title: Running
-        badge: "{{ data.containers | where(row.State == 'running') | count() }}"
-        sections:
           - components:
               - type: list
                 from: containers
-                where: "{{ row.State == 'running' }}"
                 search: true
-                sort: Names
-                empty: No container is running.
+                sort: State
+                empty: There are no containers.
+                filters:
+                  - { id: running, label: Running, where: "{{ row.State == 'running' }}" }
+                  - { id: stopped, label: Stopped, where: "{{ row.State != 'running' }}" }
                 item:
                   title: "{{ row.Names }}"
                   subtitle: "{{ row.Image }}"
                   trailing: "{{ row.Status }}"
-                  tone: success
-                on_tap: { screen: detail, params: { id: "{{ row.ID }}" } }
-      - id: all
-        title: All
+                  tone: "{{ row.State == 'running' ? 'success' : (row.State == 'exited' ? 'muted' : 'warning') }}"
+                on_tap: { screen: container, params: { id: "{{ row.ID }}" } }
+      - id: images
+        title: Images
+        badge: "{{ data.images | count() }}"
         sections:
           - components:
-              - type: table
-                from: containers
+              - type: list
+                from: images
                 search: true
-                columns:
-                  - { title: Name, value: "{{ row.Names }}" }
-                  - { title: State, value: "{{ row.State }}" }
-                  - { title: Image, value: "{{ row.Image }}" }
-                on_tap: { screen: detail, params: { id: "{{ row.ID }}" } }
+                empty: There are no images.
+                item:
+                  title: "{{ row.Repository }}:{{ row.Tag }}"
+                  subtitle: "{{ row.Size }} · {{ row.CreatedSince }}"
+                  actions:
+                    - { action: remove-image, with: { id: "{{ row.ID }}" } }
+                on_tap: { screen: image, as: sheet, params: { id: "{{ row.ID }}" } }
+      - id: volumes
+        title: Volumes
+        badge: "{{ data.volumes | count() }}"
+        sections:
+          - components:
+              - type: list
+                from: volumes
+                search: true
+                empty: There are no volumes.
+                item:
+                  title: "{{ row.Name }}"
+                  subtitle: "{{ row.Driver }}"
+                  actions:
+                    - { action: remove-volume, with: { name: "{{ row.Name }}" } }
+                on_tap: { screen: volume, as: sheet, params: { name: "{{ row.Name }}" } }
+      - id: networks
+        title: Networks
+        badge: "{{ data.networks | count() }}"
+        sections:
+          - components:
+              - type: list
+                from: networks
+                search: true
+                empty: There are no networks.
+                item:
+                  title: "{{ row.Name }}"
+                  subtitle: "{{ row.Driver }} · {{ row.Scope }}"
+                  actions:
+                    - { action: remove-network, with: { id: "{{ row.ID }}" } }
+                on_tap: { screen: network, as: sheet, params: { id: "{{ row.ID }}" } }
 
-  detail:
+  container:
     params: [id]
     docs: https://docs.docker.com/reference/cli/docker/container/
     title: "{{ data.container.Name | replace('/', '') }}"
     subtitle: "{{ data.container.Config.Image }}"
-    actions: [start, stop, restart, remove]
+    actions: [start, stop, restart, pause, unpause, shell, remove]
+    state:
+      env: { type: toggle, label: Show environment variables, auth: true, default: false }
+      lines: { type: number, label: Lines, options: [100, 200, 500, 1000], default: 200 }
     tabs:
-      - id: status
-        title: Status
+      - id: overview
+        title: Overview
         sections:
           - layout: { columns: 2 }
             components:
@@ -150,19 +273,53 @@ screens:
                 label: Restarts
                 value: "{{ data.container.RestartCount }}"
               - type: stat
-                label: Started
-                value: "{{ data.container.State.StartedAt | ago() }}"
+                label: CPU
+                value: "{{ (data.stats | first()).CPUPerc }}"
               - type: stat
-                label: PID
-                value: "{{ data.container.State.Pid }}"
-          - title: Details
+                label: Memory
+                value: "{{ (data.stats | first()).MemUsage }}"
+          - components:
+              - type: properties
+                value: "{{ data.container }}"
+                rest: tree
+                rest_title: Everything else
+                exclude: [Config.Env]
+                groups:
+                  - title: Configuration
+                    fields:
+                      - { label: Image, path: Config.Image, copy: true }
+                      - { label: ID, path: Id, copy: true, mono: true }
+                      - { label: Platform, path: Platform }
+                      - { label: Restart policy, path: HostConfig.RestartPolicy.Name, hide_empty: true }
+                      - { label: User, path: Config.User, hide_empty: true }
+                      - { label: Command, path: Path, hide_empty: true }
+                  - title: Status
+                    fields:
+                      - { label: State, path: State.Status }
+                      - { label: Health, path: State.Health.Status, hide_empty: true }
+                      - { label: Exit code, path: State.ExitCode }
+                      - { label: Error, path: State.Error, hide_empty: true, tone: danger }
+                      - { label: Started, path: State.StartedAt, format: ago }
+                      - { label: Finished, path: State.FinishedAt, format: ago, hide_empty: true }
+                  - title: Network
+                    fields:
+                      - { label: IP address, path: NetworkSettings.IPAddress, hide_empty: true, copy: true }
+                      - { label: Gateway, path: NetworkSettings.Gateway, hide_empty: true }
+                      - { label: Ports, path: NetworkSettings.Ports, format: json, hide_empty: true }
+                  - title: "{{ row.Destination }}"
+                    each: "{{ data.container.Mounts }}"
+                    fields:
+                      - { label: Source, value: "{{ row.Source }}", copy: true }
+                      - { label: Type, value: "{{ row.Type }}" }
+                      - { label: Mode, value: "{{ row.Mode }}" }
+          - title: Environment
             collapsible: true
             components:
-              - type: keyvalue
-                items:
-                  - { label: ID, value: "{{ data.container.Id }}", copy: true }
-                  - { label: Image, value: "{{ data.container.Config.Image }}" }
-                  - { label: Restart policy, value: "{{ data.container.HostConfig.RestartPolicy.Name }}" }
+              - type: controls
+                items: [env]
+              - type: code
+                visible: "{{ state.env == true }}"
+                value: "{{ data.env | join('\n') }}"
       - id: logs
         title: Logs
         sections:
@@ -171,3 +328,67 @@ screens:
                 from: logs
                 follow: true
                 search: true
+                controls: [lines]
+                levels:
+                  - { match: "error|fatal|panic|exception", level: error }
+                  - { match: "warn", level: warn }
+                  - { match: "debug|trace", level: debug }
+
+  image:
+    params: [id]
+    docs: https://docs.docker.com/reference/cli/docker/
+    title: "{{ data.image.RepoTags | first() | default(params.id) }}"
+    sections:
+      - components:
+          - type: properties
+            value: "{{ data.image }}"
+            rest: tree
+            groups:
+              - title: Image
+                fields:
+                  - { label: ID, path: Id, copy: true, mono: true }
+                  - { label: Tags, path: RepoTags, format: list }
+                  - { label: Size, path: Size, format: bytes }
+                  - { label: Created, path: Created, format: ago }
+                  - { label: Platform, value: "{{ data.image.Os }}/{{ data.image.Architecture }}" }
+              - title: Run defaults
+                fields:
+                  - { label: Entrypoint, path: Config.Entrypoint, format: list, hide_empty: true }
+                  - { label: Command, path: Config.Cmd, format: list, hide_empty: true }
+                  - { label: Working dir, path: Config.WorkingDir, hide_empty: true }
+                  - { label: User, path: Config.User, hide_empty: true }
+
+  volume:
+    params: [name]
+    docs: https://docs.docker.com/reference/cli/docker/
+    title: "{{ params.name }}"
+    sections:
+      - components:
+          - type: properties
+            value: "{{ data.volume }}"
+            rest: tree
+            groups:
+              - title: Volume
+                fields:
+                  - { label: Name, path: Name, copy: true }
+                  - { label: Driver, path: Driver }
+                  - { label: Scope, path: Scope, hide_empty: true }
+                  - { label: Mount point, path: Mountpoint, copy: true, mono: true }
+                  - { label: Created, path: CreatedAt, hide_empty: true }
+
+  network:
+    params: [id]
+    docs: https://docs.docker.com/reference/cli/docker/
+    title: "{{ data.network.Name | default(params.id) }}"
+    sections:
+      - components:
+          - type: properties
+            value: "{{ data.network }}"
+            rest: tree
+            groups:
+              - title: Network
+                fields:
+                  - { label: Name, path: Name }
+                  - { label: Driver, path: Driver }
+                  - { label: Scope, path: Scope, hide_empty: true }
+                  - { label: ID, path: Id, copy: true, mono: true, hide_empty: true }

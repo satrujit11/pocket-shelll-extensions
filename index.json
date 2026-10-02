@@ -1,18 +1,18 @@
 {
   "extensions": [
     {
-      "id": "docker-lite",
-      "name": "Docker (manifest)",
-      "description": "Containers of the Docker engine: state, logs, start, stop, restart, remove.",
+      "id": "docker",
+      "name": "Docker",
+      "description": "Containers, images, volumes and networks of Docker: state, resource use, logs, a shell, start, stop, restart, pause and remove.",
       "icon": "docker",
       "category": "containers",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "author": "Pocket Shell",
       "docs": "https://docs.docker.com/reference/cli/docker/",
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/docker/logo.svg",
       "readme": "docker/README.md",
       "path": "docker/manifest.yaml",
-      "sha256": "514814d481222bf2573de5993fd771567da062fbdb09352f326a7d52c9ab9fb8"
+      "sha256": "5bdb7d14bf766ae77cdd110f722ea5b124a3bef855cae85889d3b5e9acc1d4ce"
     },
     {
       "id": "kubernetes",
@@ -43,32 +43,32 @@
       "sha256": "d1601529c4c163225ccdb11a3d2102dd250cfd05e0945419aa7558c03aaa9d54"
     },
     {
-      "id": "pm2-lite",
-      "name": "PM2 (manifest)",
-      "description": "Node processes managed by PM2: status, memory, restarts, and control.",
+      "id": "pm2",
+      "name": "PM2",
+      "description": "Node processes managed by PM2: status, resource use, restarts, error and output logs, start, stop, restart, reload and delete.",
       "icon": "pm2",
       "category": "processes",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "author": "Pocket Shell",
       "docs": "https://pm2.keymetrics.io/docs/usage/quick-start/",
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/pm2/logo.svg",
       "readme": "pm2/README.md",
       "path": "pm2/manifest.yaml",
-      "sha256": "ad8116e66355cbfe4819284fa773f049d648082b6c08cdfb2549c42f1ca0801d"
+      "sha256": "0a22678af546093d6b6e841f3cae4ff51f521b660ce71de7cae383aef1981510"
     },
     {
-      "id": "podman-lite",
-      "name": "Podman (manifest)",
-      "description": "Containers of Podman: state, logs, start, stop, restart, remove.",
+      "id": "podman",
+      "name": "Podman",
+      "description": "Containers, images, volumes and networks of Podman: state, resource use, logs, a shell, start, stop, restart, pause and remove.",
       "icon": "podman",
       "category": "containers",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "author": "Pocket Shell",
       "docs": "https://docs.podman.io/en/latest/Commands.html",
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/podman/logo.svg",
       "readme": "podman/README.md",
       "path": "podman/manifest.yaml",
-      "sha256": "641ad2c5fef1470fcd28786a5298ba2a19c32a4d386b6b537d65f6201e7b37d3"
+      "sha256": "ad2b5382ad956998558daa8ebef59d85b2064a594b890c9c3adbf0a80917477b"
     },
     {
       "id": "redis",
@@ -121,10 +121,10 @@
       "docs": "https://manpages.ubuntu.com/manpages/noble/en/man8/ufw.8.html",
       "readme": "ufw/README.md",
       "path": "ufw/manifest.yaml",
-      "sha256": "715373d6ef07cdca64fe96159b3213f0690f050dd68706f4a8e14d2a1ed7881a"
+      "sha256": "9fe83f601d1522c86e0767b60bb9addfe10f2789c141a07e37aa0f05e7ccf932"
     }
   ],
   "name": "Pocket Shell extensions",
   "spec": "pocketshell.registry/v0",
-  "updated": "2026-10-02T04:59:28Z"
+  "updated": "2026-10-02T05:37:17Z"
 }

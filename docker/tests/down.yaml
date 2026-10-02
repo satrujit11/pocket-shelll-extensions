@@ -1,0 +1,8 @@
+name: a daemon that is not running is explained
+fakes:
+  docker: |
+    echo "Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?" >&2
+    exit 1
+checks:
+  - screen: main
+    errors: ['Docker is not running']

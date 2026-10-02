@@ -15,8 +15,7 @@ Firewall status and rules: add, delete, enable and disable.
 
 ## What you see
 
-- **main** - Firewall (tabs: Status, Rules)
-- **rule**
+- **main** - Firewall
 
 ## Buttons
 

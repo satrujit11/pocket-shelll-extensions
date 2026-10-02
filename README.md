@@ -59,7 +59,7 @@ The standard is in [docs/manifest-spec.md](docs/manifest-spec.md); the full walk
 
 ## Ids
 
-`docker`, `podman` and `pm2` belong to the extensions built into the agent, so the manifest-only versions here are `docker-lite`, `podman-lite` and `pm2-lite`.
+`docker`, `podman` and `pm2` also ship with the agent, so they work before any registry is reached; the files here are the same ones (a test checks they match).
 
 ## Logos
 

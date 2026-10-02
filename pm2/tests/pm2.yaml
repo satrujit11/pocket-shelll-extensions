@@ -1,0 +1,64 @@
+name: process list, detail with output and error logs, environment behind a toggle, control
+fakes:
+  pm2: |
+    case "$1" in
+      --version) echo "5.3.0" ;;
+      jlist) cat <<'EOF'
+    [
+     {"name":"api","pm_id":0,"pid":123,"monit":{"memory":52428800,"cpu":3},"pm2_env":{"status":"online","restart_time":1,"exec_mode":"cluster_mode","pm_exec_path":"/srv/api/index.js","pm_cwd":"/srv/api","node_version":"20.1.0","unstable_restarts":0,"pm_out_log_path":"/logs/api-out.log","pm_err_log_path":"/logs/api-err.log","env":{"DB_PASSWORD":"hunter2"}}},
+     {"name":"worker","pm_id":1,"monit":{"memory":0,"cpu":0},"pm2_env":{"status":"stopped","restart_time":4,"exec_mode":"fork_mode","pm_out_log_path":"/logs/w-out.log","pm_err_log_path":"/logs/w-err.log"}},
+     {"name":"bad","pm_id":2,"monit":{"memory":0,"cpu":0},"pm2_env":{"status":"errored","restart_time":9,"pm_out_log_path":"/logs/b-out.log","pm_err_log_path":"/logs/b-err.log"}}
+    ]
+    EOF
+      ;;
+    esac
+  tail: |
+    case "$4" in
+      /logs/api-out.log) echo "api listening on 3000" ;;
+      /logs/api-err.log) echo "Error: ECONNRESET" ;;
+    esac
+checks:
+  - name: the list shows every process with chips
+    screen: main
+    contains: ['"3 processes"', '"api"', '50.0 M', 'errored', '"filters"', 'Not online']
+  - name: a running process
+    screen: detail
+    params: { name: api }
+    contains: ['"online"', '/srv/api/index.js', '20.1.0', 'api listening on 3000', 'ECONNRESET', '"streams"']
+    not_contains: ['hunter2']
+    offers: [restart, reload, stop, flush, delete]
+    not_offers: [start]
+  - name: a stopped one offers start only
+    screen: detail
+    params: { name: worker }
+    offers: [start, delete]
+    not_offers: [restart, stop, reload]
+  - name: environment variables are only read once asked for
+    screen: detail
+    params: { name: api, state.env: "true" }
+    contains: ['hunter2']
+  - name: restart is confirmed
+    action: restart
+    screen: detail
+    params: { name: api }
+    refused: confirmed
+  - name: restart runs pm2 restart
+    action: restart
+    screen: detail
+    params: { name: api }
+    confirmed: true
+    ran: ["pm2 restart api"]
+  - name: delete needs the name typed
+    action: delete
+    screen: detail
+    params: { name: api }
+    confirmed: true
+    confirm_text: wrong
+    refused: does not match
+  - name: delete with the right name
+    action: delete
+    screen: detail
+    params: { name: api }
+    confirmed: true
+    confirm_text: api
+    ran: ["pm2 delete api"]
