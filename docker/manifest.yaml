@@ -1,0 +1,173 @@
+# Docker, written only as a manifest: containers with tabs, a detail screen with
+# live logs, and start / stop / restart / remove. It needs Docker 23 or newer
+# (`--format json`). The built-in Docker extension still opens the app's native
+# screens, which also have a shell and resource graphs; this shows what a
+# manifest alone can do.
+spec: pocketshell.ext/v0
+id: docker-lite
+name: Docker (manifest)
+description: "Containers of the Docker engine: state, logs, start, stop, restart, remove."
+icon: docker
+category: containers
+version: 1.0.0
+author: Pocket Shell
+docs: https://docs.docker.com/reference/cli/docker/
+logo: https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/docker/logo.svg
+license: Apache-2.0
+
+detect:
+  binaries: [docker]
+  version_args: [--version]
+
+permissions: [read-containers, control-containers]
+
+data:
+  containers:
+    run: [docker, ps, -a, --no-trunc, --format, json]
+    parse: jsonl
+    refresh: 5s
+  container:
+    params: [id]
+    run: [docker, inspect, "{{ params.id }}"]
+    parse: json
+    path: "$[0]"
+    refresh: 5s
+  logs:
+    params: [id]
+    run: [docker, logs, --tail, "200", --follow, "{{ params.id }}"]
+    parse: lines
+    stream: true
+    merge_stderr: true
+
+actions:
+  start:
+    label: Start
+    icon: play
+    style: primary
+    visible: "{{ data.container.State.Running != true }}"
+    run: [docker, start, "{{ params.id }}"]
+    after: [{ refresh: containers }, { refresh: container }]
+  stop:
+    label: Stop
+    icon: stop
+    style: danger
+    visible: "{{ data.container.State.Running == true }}"
+    run: [docker, stop, "{{ params.id }}"]
+    confirm:
+      title: "Stop this container?"
+      text: Whatever it serves goes offline until it is started again.
+    after: [{ refresh: containers }, { refresh: container }]
+  restart:
+    label: Restart
+    icon: restart
+    visible: "{{ data.container.State.Running == true }}"
+    run: [docker, restart, "{{ params.id }}"]
+    confirm:
+      title: "Restart this container?"
+      text: It is unavailable for a moment.
+    after: [{ refresh: containers }, { refresh: container }]
+  remove:
+    label: Remove
+    icon: trash
+    style: danger
+    visible: "{{ data.container.State.Running != true }}"
+    run: [docker, rm, "{{ params.id }}"]
+    confirm:
+      title: "Remove this container?"
+      text: The container is deleted. Its volumes are kept.
+      type_to_confirm: "{{ data.container.Name | replace('/', '') }}"
+    after: [{ refresh: containers }]
+
+screens:
+  main:
+    title: Containers
+    subtitle: "{{ data.containers | count() }} containers"
+    tabs:
+      - id: overview
+        title: Overview
+        sections:
+          - layout: { columns: 3 }
+            components:
+              - type: stat
+                label: Running
+                value: "{{ data.containers | where(row.State == 'running') | count() }}"
+                tone: success
+              - type: stat
+                label: Stopped
+                value: "{{ data.containers | where(row.State == 'exited') | count() }}"
+                tone: muted
+              - type: stat
+                label: Other
+                value: "{{ data.containers | where(row.State != 'running' && row.State != 'exited') | count() }}"
+                tone: warning
+      - id: running
+        title: Running
+        badge: "{{ data.containers | where(row.State == 'running') | count() }}"
+        sections:
+          - components:
+              - type: list
+                from: containers
+                where: "{{ row.State == 'running' }}"
+                search: true
+                sort: Names
+                empty: No container is running.
+                item:
+                  title: "{{ row.Names }}"
+                  subtitle: "{{ row.Image }}"
+                  trailing: "{{ row.Status }}"
+                  tone: success
+                on_tap: { screen: detail, params: { id: "{{ row.ID }}" } }
+      - id: all
+        title: All
+        sections:
+          - components:
+              - type: table
+                from: containers
+                search: true
+                columns:
+                  - { title: Name, value: "{{ row.Names }}" }
+                  - { title: State, value: "{{ row.State }}" }
+                  - { title: Image, value: "{{ row.Image }}" }
+                on_tap: { screen: detail, params: { id: "{{ row.ID }}" } }
+
+  detail:
+    params: [id]
+    docs: https://docs.docker.com/reference/cli/docker/container/
+    title: "{{ data.container.Name | replace('/', '') }}"
+    subtitle: "{{ data.container.Config.Image }}"
+    actions: [start, stop, restart, remove]
+    tabs:
+      - id: status
+        title: Status
+        sections:
+          - layout: { columns: 2 }
+            components:
+              - type: stat
+                label: State
+                value: "{{ data.container.State.Status }}"
+                tone: "{{ data.container.State.Running == true ? 'success' : 'muted' }}"
+              - type: stat
+                label: Restarts
+                value: "{{ data.container.RestartCount }}"
+              - type: stat
+                label: Started
+                value: "{{ data.container.State.StartedAt | ago() }}"
+              - type: stat
+                label: PID
+                value: "{{ data.container.State.Pid }}"
+          - title: Details
+            collapsible: true
+            components:
+              - type: keyvalue
+                items:
+                  - { label: ID, value: "{{ data.container.Id }}", copy: true }
+                  - { label: Image, value: "{{ data.container.Config.Image }}" }
+                  - { label: Restart policy, value: "{{ data.container.HostConfig.RestartPolicy.Name }}" }
+      - id: logs
+        title: Logs
+        sections:
+          - components:
+              - type: logs
+                from: logs
+                follow: true
+                search: true

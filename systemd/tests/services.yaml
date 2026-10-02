@@ -1,0 +1,40 @@
+name: service list, detail, logs and control
+fakes:
+  systemctl: |
+    case "$1" in
+      list-units) cat <<'EOF'
+    [
+     {"unit":"nginx.service","load":"loaded","active":"active","sub":"running","description":"A web server"},
+     {"unit":"cron.service","load":"loaded","active":"active","sub":"running","description":"Scheduler"},
+     {"unit":"bad.service","load":"loaded","active":"failed","sub":"failed","description":"Broken"}
+    ]
+    EOF
+      ;;
+      show) printf 'ActiveState=active\nSubState=running\nDescription=A web server\nMemoryCurrent=1048576\nTasksCurrent=3\nMainPID=42\nFragmentPath=/lib/systemd/system/nginx.service\n' ;;
+      --version) echo "systemd 255" ;;
+    esac
+  journalctl: |
+    echo "2026-01-01T00:00:00 nginx started"; echo "2026-01-01T00:00:01 listening"
+checks:
+  - screen: main
+    contains: ['"3 units"', 'bad.service', 'Running', 'Failed']
+    offers: [reload-daemon]
+  - screen: detail
+    params: { name: nginx.service }
+    contains: ['A web server', 'nginx started', 'listening', '1.0 M']
+    offers: [stop, restart]
+    not_offers: [start]
+  - name: stop needs the name typed
+    action: stop
+    screen: detail
+    params: { name: nginx.service }
+    confirmed: true
+    confirm_text: wrong
+    refused: does not match
+  - name: stop with the name typed runs through sudo
+    action: stop
+    screen: detail
+    params: { name: nginx.service }
+    confirmed: true
+    confirm_text: nginx.service
+    ran: ["sudo -n -- systemctl stop nginx.service"]

@@ -1,0 +1,36 @@
+name: status, sites, logs and control
+fakes:
+  nginx: |
+    case "$1" in
+      -v) echo "nginx version: nginx/1.24.0" >&2 ;;
+      -t) echo "nginx: the configuration file /etc/nginx/nginx.conf syntax is ok" >&2; echo "nginx: configuration file /etc/nginx/nginx.conf test is successful" >&2 ;;
+    esac
+  systemctl: |
+    case "$1" in is-active) echo active ;; esac
+  ls: |
+    printf 'default\napp.conf\n'
+  cat: |
+    printf 'server {\n  listen 80;\n  server_name app.test;\n}\n'
+  tail: |
+    printf '2026/01/01 error one\n2026/01/01 error two\n'
+checks:
+  - screen: main
+    contains: ['active', 'test is successful', 'app.conf', 'error one', 'error two']
+    offers: [test, reload, restart]
+  - screen: site
+    params: { name: app.conf }
+    contains: ['app.conf', 'server_name app.test']
+  - name: test config shows the output
+    action: test
+    screen: main
+    output: ['syntax is ok']
+  - name: reload runs through sudo
+    action: reload
+    screen: main
+    confirmed: true
+    ran: ["sudo -n -- systemctl reload nginx"]
+  - name: restart must be confirmed
+    action: restart
+    screen: main
+    refused: confirmed
+    ran: ["systemctl restart"]

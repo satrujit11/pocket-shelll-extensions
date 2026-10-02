@@ -1,0 +1,44 @@
+name: pods, nodes, a pod's detail and logs, deleting
+fakes:
+  kubectl: |
+    case "$1 $2" in
+      "version --client") echo "Client Version: v1.30.0" ;;
+      "get pods") cat <<'EOF'
+    {"items":[
+     {"metadata":{"name":"web-1","namespace":"prod"},"status":{"phase":"Running"}},
+     {"metadata":{"name":"job-9","namespace":"prod"},"status":{"phase":"Failed"}},
+     {"metadata":{"name":"dns-1","namespace":"kube-system"},"status":{"phase":"Pending"}}
+    ]}
+    EOF
+      ;;
+      "get nodes") cat <<'EOF'
+    {"items":[{"metadata":{"name":"node-a"},"status":{"nodeInfo":{"kubeletVersion":"v1.30.0"},"conditions":[{"type":"Ready","status":"True"}]}}]}
+    EOF
+      ;;
+      "get pod") cat <<'EOF'
+    {"metadata":{"name":"web-1","namespace":"prod"},"spec":{"nodeName":"node-a","containers":[{"image":"nginx:1.27"}]},"status":{"phase":"Running","podIP":"10.1.2.3","startTime":"2026-01-01T00:00:00Z","containerStatuses":[{"restartCount":3}]}}
+    EOF
+      ;;
+      "logs web-1") echo "GET /health 200"; echo "GET /api 200" ;;
+    esac
+checks:
+  - screen: main
+    contains: ['"3 pods"', 'web-1', 'job-9', 'kube-system', 'node-a', 'Ready', 'v1.30.0']
+  - screen: pod
+    params: { ns: prod, name: web-1 }
+    contains: ['Running', '"value":3', 'node-a', 'nginx:1.27', '10.1.2.3', 'GET /health 200']
+    offers: [delete-pod]
+  - name: delete needs the pod name typed
+    action: delete-pod
+    screen: pod
+    params: { ns: prod, name: web-1 }
+    confirmed: true
+    confirm_text: web
+    refused: does not match
+  - name: delete runs kubectl delete
+    action: delete-pod
+    screen: pod
+    params: { ns: prod, name: web-1 }
+    confirmed: true
+    confirm_text: web-1
+    ran: ["kubectl delete pod web-1 -n prod"]

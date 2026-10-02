@@ -1,0 +1,120 @@
+spec: pocketshell.ext/v0
+id: ufw
+name: Firewall (ufw)
+description: "Firewall status and rules: add, delete, enable and disable."
+icon: shield
+category: security
+version: 1.0.0
+author: Pocket Shell
+docs: https://manpages.ubuntu.com/manpages/noble/en/man8/ufw.8.html
+license: Apache-2.0
+
+detect:
+  binaries: [ufw]
+  version_args: [version]
+
+permissions: [read-firewall, control-firewall, sudo]
+
+data:
+  status:
+    run: [ufw, status, verbose]
+    parse: keyvalue
+    refresh: 10s
+    privilege: sudo
+  rules:
+    run: [ufw, status, numbered]
+    parse: regex
+    pattern: '^\[\s*(?P<n>\d+)\]\s+(?P<to>.+?)\s{2,}(?P<action>ALLOW IN|DENY IN|REJECT IN|LIMIT IN|ALLOW OUT|DENY OUT|REJECT OUT|LIMIT OUT|ALLOW FWD|DENY FWD|ALLOW|DENY|REJECT|LIMIT)\s+(?P<from>.+?)\s*$'
+    refresh: 10s
+    privilege: sudo
+
+actions:
+  allow:
+    label: Allow a port
+    icon: add
+    run: [ufw, allow, "{{ form.port }}/{{ form.proto }}"]
+    privilege: sudo
+    fields:
+      - { id: port, type: number, label: Port, required: true, min: 1, max: 65535 }
+      - { id: proto, type: select, label: Protocol, options: [tcp, udp], default: tcp }
+  deny:
+    label: Block a port
+    icon: stop
+    run: [ufw, deny, "{{ form.port }}/{{ form.proto }}"]
+    privilege: sudo
+    confirm: { title: "Block this port?", text: Connections to it are refused. }
+    fields:
+      - { id: port, type: number, label: Port, required: true, min: 1, max: 65535 }
+      - { id: proto, type: select, label: Protocol, options: [tcp, udp], default: tcp }
+  delete-rule:
+    label: Delete rule
+    icon: trash
+    style: danger
+    run: [ufw, --force, delete, "{{ params.n }}"]
+    privilege: sudo
+    confirm: { title: "Delete rule {{ params.n }}?", text: "Rule numbers change after a delete, so check the list again before deleting another." }
+  enable:
+    label: Enable
+    icon: shield
+    style: primary
+    visible: "{{ data.status.Status == 'inactive' }}"
+    run: [ufw, --force, enable]
+    privilege: sudo
+    confirm: { title: "Turn the firewall on?", text: "Make sure SSH is allowed first or you will lock yourself out." }
+  disable:
+    label: Disable
+    icon: stop
+    style: danger
+    visible: "{{ data.status.Status == 'active' }}"
+    run: [ufw, disable]
+    privilege: sudo
+    confirm: { title: "Turn the firewall off?", text: "Every port becomes reachable.", type_to_confirm: disable }
+
+screens:
+  main:
+    title: Firewall
+    subtitle: "{{ data.status.Status }}"
+    actions: [allow, deny, enable, disable]
+    tabs:
+      - id: status
+        title: Status
+        sections:
+          - layout: { columns: 2 }
+            components:
+              - type: stat
+                label: Firewall
+                value: "{{ data.status.Status }}"
+                tone: "{{ data.status.Status == 'active' ? 'success' : 'danger' }}"
+              - type: stat
+                label: Rules
+                value: "{{ data.rules | count() }}"
+          - title: Defaults
+            components:
+              - type: keyvalue
+                items:
+                  - { label: Default policy, value: "{{ data.status.Default }}" }
+                  - { label: Logging, value: "{{ data.status.Logging }}" }
+      - id: rules
+        title: Rules
+        badge: "{{ data.rules | count() }}"
+        sections:
+          - components:
+              - type: list
+                from: rules
+                search: true
+                empty: There are no rules.
+                item:
+                  title: "{{ row.to }}"
+                  subtitle: "{{ row.action }} from {{ row.from }}"
+                  badge: "{{ row.n }}"
+                  tone: "{{ row.action == 'ALLOW' || row.action == 'ALLOW IN' ? 'success' : 'danger' }}"
+                on_tap: { screen: rule, params: { n: "{{ row.n }}" } }
+  rule:
+    params: [n]
+    docs: https://help.ubuntu.com/community/UFW
+    title: "Rule {{ params.n }}"
+    actions: [delete-rule]
+    sections:
+      - components:
+          - type: text
+            value: "{{ (data.rules | where(row.n == params.n) | first()).to }}  {{ (data.rules | where(row.n == params.n) | first()).action }}  {{ (data.rules | where(row.n == params.n) | first()).from }}"

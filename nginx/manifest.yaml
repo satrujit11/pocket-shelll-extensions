@@ -1,0 +1,143 @@
+# Nginx: status, the sites that are enabled, the config test, logs, and the
+# actions an admin reaches for: test the config, reload, restart.
+spec: pocketshell.ext/v0
+id: nginx
+name: Nginx
+description: "Web server status, enabled sites, config test, logs, reload and restart."
+icon: web
+category: web
+version: 1.0.0
+author: Pocket Shell
+docs: https://nginx.org/en/docs/
+logo: https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/nginx/logo.svg
+license: Apache-2.0
+requires: [logs, table]
+
+detect:
+  binaries: [nginx]
+  version_args: [-v]
+
+permissions: [read-config, read-logs, control-services, sudo]
+
+data:
+  status:
+    run: [systemctl, is-active, nginx]
+    parse: text
+    refresh: 5s
+  configtest:
+    run: [nginx, -t]
+    parse: text
+    merge_stderr: true
+    privilege: sudo
+    refresh: 30s
+  sites:
+    run: [ls, -1, /etc/nginx/sites-enabled]
+    parse: lines
+    refresh: 30s
+  site:
+    params: [name]
+    run: [cat, "/etc/nginx/sites-enabled/{{ params.name }}"]
+    parse: text
+    privilege: sudo
+    refresh: manual
+  errors:
+    run: [tail, -n, "300", /var/log/nginx/error.log]
+    parse: lines
+    privilege: sudo
+    refresh: 5s
+  access:
+    run: [tail, -n, "300", /var/log/nginx/access.log]
+    parse: lines
+    privilege: sudo
+    refresh: 5s
+
+actions:
+  test:
+    label: Test config
+    icon: check
+    run: [nginx, -t]
+    privilege: sudo
+    result: output
+  reload:
+    label: Reload
+    icon: restart
+    run: [systemctl, reload, nginx]
+    privilege: sudo
+    confirm:
+      title: Reload Nginx?
+      text: Applies the current configuration without dropping connections.
+    after: [{ refresh: status }, { refresh: configtest }]
+  restart:
+    label: Restart
+    icon: restart
+    style: danger
+    run: [systemctl, restart, nginx]
+    privilege: sudo
+    confirm:
+      title: Restart Nginx?
+      text: Connections are dropped for a moment.
+    after: [{ refresh: status }]
+
+screens:
+  main:
+    title: Nginx
+    subtitle: "{{ data.status.text | trim() }}"
+    actions: [test, reload, restart]
+    tabs:
+      - id: overview
+        title: Overview
+        sections:
+          - layout: { columns: 3 }
+            components:
+              - type: stat
+                label: Status
+                value: "{{ data.status.text | trim() | default('unknown') }}"
+                tone: "{{ data.status.text | trim() == 'active' ? 'success' : 'danger' }}"
+              - type: stat
+                label: Sites
+                value: "{{ data.sites | count() }}"
+              - type: stat
+                label: Config
+                value: "{{ data.configtest.text | contains('successful') ? 'OK' : 'Problem' }}"
+                tone: "{{ data.configtest.text | contains('successful') ? 'success' : 'warning' }}"
+          - title: Configuration test
+            components:
+              - type: code
+                value: "{{ data.configtest.text | trim() }}"
+      - id: sites
+        title: Sites
+        badge: "{{ data.sites | count() }}"
+        sections:
+          - components:
+              - type: list
+                from: sites
+                sort: line
+                empty: No sites are enabled.
+                item:
+                  title: "{{ row.line }}"
+                on_tap: { screen: site, params: { name: "{{ row.line }}" } }
+      - id: logs
+        title: Logs
+        sections:
+          - title: Errors
+            components:
+              - type: logs
+                from: errors
+                follow: true
+                search: true
+          - title: Access
+            collapsible: true
+            components:
+              - type: logs
+                from: access
+                follow: true
+                search: true
+
+  site:
+    params: [name]
+    title: "{{ params.name }}"
+    sections:
+      - components:
+          - type: code
+            value: "{{ data.site.text }}"
+            language: nginx

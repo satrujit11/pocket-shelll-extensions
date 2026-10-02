@@ -1,0 +1,28 @@
+name: programs, detail and control
+fakes:
+  supervisorctl: |
+    case "$1" in
+      status)
+        if [ -n "$2" ]; then printf '%s                  RUNNING   pid 101, uptime 1:02:03\n' "$2"; else
+        printf 'web                              RUNNING   pid 101, uptime 1:02:03\nworker:worker_00                 STOPPED   Not started\nbad                              FATAL     Exited too quickly (process log may have details)\n'; fi ;;
+      tail) echo "worker started"; echo "job done" ;;
+    esac
+checks:
+  - screen: main
+    contains: ['"3 programs"', 'web', 'worker:worker_00', 'FATAL']
+  - screen: detail
+    params: { name: web }
+    contains: ['RUNNING', 'pid 101', 'worker started']
+    offers: [stop, restart]
+    not_offers: [start]
+  - name: restart is confirmed first
+    action: restart
+    screen: detail
+    params: { name: web }
+    refused: confirmed
+  - name: restart runs through sudo
+    action: restart
+    screen: detail
+    params: { name: web }
+    confirmed: true
+    ran: ["sudo -n -- supervisorctl restart web"]

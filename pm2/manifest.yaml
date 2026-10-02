@@ -1,0 +1,136 @@
+# PM2, written only as a manifest: the process list with status and numbers,
+# a detail screen and restart / stop / start / delete.
+spec: pocketshell.ext/v0
+id: pm2-lite
+name: PM2 (manifest)
+description: "Node processes managed by PM2: status, memory, restarts, and control."
+icon: pm2
+category: processes
+version: 1.0.0
+author: Pocket Shell
+docs: https://pm2.keymetrics.io/docs/usage/quick-start/
+logo: https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/pm2/logo.svg
+license: Apache-2.0
+
+detect:
+  binaries: [pm2]
+  version_args: [--version]
+
+permissions: [read-processes, control-processes]
+
+data:
+  logs:
+    params: [name]
+    run: [pm2, logs, "{{ params.name }}", --lines, "100", --raw]
+    parse: lines
+    stream: true
+    merge_stderr: true
+  procs:
+    run: [pm2, jlist]
+    parse: json
+    path: $
+    refresh: 5s
+    timeout: 10s
+
+actions:
+  restart:
+    label: Restart
+    icon: restart
+    run: [pm2, restart, "{{ params.name }}"]
+    confirm: { title: "Restart {{ params.name }}?", text: It is unavailable for a moment. }
+    after: [{ refresh: procs }]
+  stop:
+    label: Stop
+    icon: stop
+    style: danger
+    run: [pm2, stop, "{{ params.name }}"]
+    confirm: { title: "Stop {{ params.name }}?", text: It stays stopped until you start it. }
+    after: [{ refresh: procs }]
+  start:
+    label: Start
+    icon: play
+    style: primary
+    run: [pm2, start, "{{ params.name }}"]
+    after: [{ refresh: procs }]
+  delete:
+    label: Delete
+    icon: trash
+    style: danger
+    run: [pm2, delete, "{{ params.name }}"]
+    confirm:
+      title: "Delete {{ params.name }} from PM2?"
+      text: It is removed from the PM2 list.
+      type_to_confirm: "{{ params.name }}"
+    after: [{ refresh: procs }]
+
+screens:
+  main:
+    title: Processes
+    subtitle: "{{ data.procs | count() }} processes"
+    tabs:
+      - id: overview
+        title: Overview
+        sections:
+          - layout: { columns: 3 }
+            components:
+              - type: stat
+                label: Online
+                value: "{{ data.procs | where(row.pm2_env.status == 'online') | count() }}"
+                tone: success
+              - type: stat
+                label: Stopped
+                value: "{{ data.procs | where(row.pm2_env.status == 'stopped') | count() }}"
+                tone: muted
+              - type: stat
+                label: Errored
+                value: "{{ data.procs | where(row.pm2_env.status == 'errored') | count() }}"
+                tone: danger
+      - id: all
+        title: All
+        sections:
+          - components:
+              - type: list
+                from: procs
+                search: true
+                sort: name
+                empty: PM2 has no processes.
+                item:
+                  title: "{{ row.name }}"
+                  subtitle: "{{ row.monit.memory | bytes() }} · {{ row.monit.cpu }}% cpu · {{ row.pm2_env.restart_time }} restarts"
+                  trailing: "{{ row.pm2_env.status }}"
+                  tone: "{{ row.pm2_env.status == 'online' ? 'success' : 'danger' }}"
+                on_tap: { screen: detail, params: { name: "{{ row.name }}" } }
+  detail:
+    params: [name]
+    docs: https://pm2.keymetrics.io/docs/usage/process-management/
+    title: "{{ params.name }}"
+    subtitle: "{{ (data.procs | where(row.name == params.name) | first()).pm2_env.status }}"
+    actions: [start, restart, stop, delete]
+    tabs:
+      - id: status
+        title: Status
+        sections:
+          - layout: { columns: 2 }
+            components:
+              - type: stat
+                label: Status
+                value: "{{ (data.procs | where(row.name == params.name) | first()).pm2_env.status }}"
+                tone: "{{ (data.procs | where(row.name == params.name) | first()).pm2_env.status == 'online' ? 'success' : 'danger' }}"
+              - type: stat
+                label: Memory
+                value: "{{ (data.procs | where(row.name == params.name) | first()).monit.memory | bytes() }}"
+              - type: stat
+                label: CPU
+                value: "{{ (data.procs | where(row.name == params.name) | first()).monit.cpu }}"
+                unit: "%"
+              - type: stat
+                label: Restarts
+                value: "{{ (data.procs | where(row.name == params.name) | first()).pm2_env.restart_time }}"
+      - id: logs
+        title: Logs
+        sections:
+          - components:
+              - type: logs
+                from: logs
+                follow: true
+                search: true

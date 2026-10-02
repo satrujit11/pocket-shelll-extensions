@@ -1,0 +1,23 @@
+name: status numbers
+fakes:
+  redis-cli: |
+    case "$1" in
+      --version) echo "redis-cli 7.0.15" ;;
+      info) printf '# Server\r\nredis_version:7.0.15\r\nuptime_in_seconds:3700\r\n# Clients\r\nconnected_clients:12\r\n# Memory\r\nused_memory:10485760\r\nused_memory_peak_human:12.00M\r\n# Stats\r\ntotal_commands_processed:99\r\ninstantaneous_ops_per_sec:7\r\nrole:master\r\n# Keyspace\r\ndb0:keys=5,expires=1,avg_ttl=0\r\n' ;;
+      bgsave) echo "Background saving started" ;;
+    esac
+checks:
+  - screen: main
+    contains: ['7.0.15', '"12"', '10.0 M', '"7"', 'master', 'keys=5,expires=1', '1h']
+    offers: [save]
+  - name: saving asks first
+    action: save
+    screen: main
+    refused: confirmed
+    ran: ["redis-cli bgsave"]
+  - name: save runs bgsave
+    action: save
+    screen: main
+    confirmed: true
+    ran: ["redis-cli bgsave"]
+    output: ['Background saving started']

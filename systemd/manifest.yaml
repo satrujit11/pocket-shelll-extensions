@@ -1,0 +1,184 @@
+# A complete example: systemd services with tabs, cards, a detail screen,
+# live logs and actions. Needs systemd 248 or newer (JSON output).
+spec: pocketshell.ext/v0
+id: systemd
+name: Services
+description: "systemd services: what runs, what failed, logs, start, stop and restart."
+icon: server
+category: system
+version: 1.0.0
+author: Pocket Shell
+docs: https://www.freedesktop.org/software/systemd/man/latest/systemctl.html
+license: Apache-2.0
+requires: [chart, logs, table]
+
+detect:
+  binaries: [systemctl]
+  version_args: [--version]
+
+permissions: [read-services, control-services, sudo]
+
+data:
+  units:
+    run: [systemctl, list-units, --type=service, --all, --no-pager, --output=json]
+    parse: json
+    path: $
+    refresh: 10s
+    timeout: 8s
+  unit:
+    params: [name]
+    run: [systemctl, show, "{{ params.name }}", --no-pager]
+    parse: keyvalue
+    refresh: 5s
+  journal:
+    params: [name]
+    run: [journalctl, -u, "{{ params.name }}", -n, "200", -f, --no-pager, --output=short-iso]
+    parse: lines
+    stream: true
+    privilege: sudo
+
+actions:
+  start:
+    label: Start
+    icon: play
+    style: primary
+    visible: "{{ data.unit.ActiveState != 'active' }}"
+    run: [systemctl, start, "{{ params.name }}"]
+    privilege: sudo
+    after: [{ refresh: units }, { refresh: unit }]
+  stop:
+    label: Stop
+    icon: stop
+    style: danger
+    visible: "{{ data.unit.ActiveState == 'active' }}"
+    run: [systemctl, stop, "{{ params.name }}"]
+    privilege: sudo
+    confirm:
+      title: "Stop {{ params.name }}?"
+      text: Anything using this service will stop working until it is started again.
+      type_to_confirm: "{{ params.name }}"
+    after: [{ refresh: units }, { refresh: unit }]
+  restart:
+    label: Restart
+    icon: restart
+    run: [systemctl, restart, "{{ params.name }}"]
+    privilege: sudo
+    confirm:
+      title: "Restart {{ params.name }}?"
+      text: It is unavailable for a moment.
+    after: [{ refresh: units }, { refresh: unit }]
+  reload-daemon:
+    label: Reload systemd
+    icon: restart
+    run: [systemctl, daemon-reload]
+    privilege: sudo
+    result: toast
+
+screens:
+  main:
+    title: Services
+    subtitle: "{{ data.units | count() }} units"
+    actions: [reload-daemon]
+    tabs:
+      - id: overview
+        title: Overview
+        sections:
+          - layout: { columns: 3 }
+            components:
+              - type: stat
+                label: Running
+                value: "{{ data.units | where(row.sub == 'running') | count() }}"
+                tone: success
+              - type: stat
+                label: Failed
+                value: "{{ data.units | where(row.active == 'failed') | count() }}"
+                tone: danger
+              - type: stat
+                label: Stopped
+                value: "{{ data.units | where(row.sub == 'dead') | count() }}"
+                tone: muted
+          - title: Needs attention
+            visible: "{{ data.units | where(row.active == 'failed') | count() > 0 }}"
+            components:
+              - type: list
+                from: units
+                where: "{{ row.active == 'failed' }}"
+                sort: unit
+                item:
+                  title: "{{ row.unit }}"
+                  subtitle: "{{ row.description }}"
+                  badge: failed
+                  tone: danger
+                on_tap: { screen: detail, params: { name: "{{ row.unit }}" } }
+      - id: running
+        title: Running
+        badge: "{{ data.units | where(row.sub == 'running') | count() }}"
+        sections:
+          - components:
+              - type: list
+                from: units
+                where: "{{ row.sub == 'running' }}"
+                search: true
+                sort: unit
+                empty: Nothing is running.
+                item:
+                  title: "{{ row.unit }}"
+                  subtitle: "{{ row.description }}"
+                  trailing: "{{ row.sub }}"
+                  tone: success
+                on_tap: { screen: detail, params: { name: "{{ row.unit }}" } }
+      - id: all
+        title: All
+        sections:
+          - components:
+              - type: table
+                from: units
+                search: true
+                columns:
+                  - { title: Unit, value: "{{ row.unit }}" }
+                  - { title: State, value: "{{ row.active }}" }
+                  - { title: Sub, value: "{{ row.sub }}" }
+                on_tap: { screen: detail, params: { name: "{{ row.unit }}" } }
+
+  detail:
+    params: [name]
+    title: "{{ params.name }}"
+    subtitle: "{{ data.unit.Description }}"
+    actions: [start, stop, restart]
+    tabs:
+      - id: status
+        title: Status
+        sections:
+          - layout: { columns: 2 }
+            components:
+              - type: stat
+                label: State
+                value: "{{ data.unit.ActiveState }}"
+                detail: "{{ data.unit.SubState }}"
+                tone: "{{ data.unit.ActiveState == 'active' ? 'success' : 'danger' }}"
+              - type: stat
+                label: Memory
+                value: "{{ data.unit.MemoryCurrent | bytes() }}"
+              - type: stat
+                label: Tasks
+                value: "{{ data.unit.TasksCurrent }}"
+              - type: stat
+                label: Since
+                value: "{{ data.unit.ActiveEnterTimestamp | ago() }}"
+          - title: Details
+            collapsible: true
+            components:
+              - type: keyvalue
+                items:
+                  - { label: Main PID, value: "{{ data.unit.MainPID }}", copy: true }
+                  - { label: Unit file, value: "{{ data.unit.FragmentPath }}", copy: true }
+                  - { label: Starts at boot, value: "{{ data.unit.UnitFileState }}" }
+                  - { label: Restart policy, value: "{{ data.unit.Restart }}" }
+      - id: logs
+        title: Logs
+        sections:
+          - components:
+              - type: logs
+                from: journal
+                follow: true
+                search: true

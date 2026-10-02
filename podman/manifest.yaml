@@ -1,0 +1,170 @@
+# Podman, written only as a manifest: containers with tabs, a detail screen
+# with live logs, and start / stop / restart / remove.
+spec: pocketshell.ext/v0
+id: podman-lite
+name: Podman (manifest)
+description: "Containers of Podman: state, logs, start, stop, restart, remove."
+icon: podman
+category: containers
+version: 1.0.0
+author: Pocket Shell
+docs: https://docs.podman.io/en/latest/Commands.html
+logo: https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/podman/logo.svg
+license: Apache-2.0
+
+detect:
+  binaries: [podman]
+  version_args: [--version]
+
+permissions: [read-containers, control-containers]
+
+data:
+  containers:
+    run: [podman, ps, -a, --no-trunc, --format, json]
+    parse: json
+    path: $
+    refresh: 5s
+  container:
+    params: [id]
+    run: [podman, inspect, "{{ params.id }}"]
+    parse: json
+    path: "$[0]"
+    refresh: 5s
+  logs:
+    params: [id]
+    run: [podman, logs, --tail, "200", --follow, "{{ params.id }}"]
+    parse: lines
+    stream: true
+    merge_stderr: true
+
+actions:
+  start:
+    label: Start
+    icon: play
+    style: primary
+    visible: "{{ data.container.State.Running != true }}"
+    run: [podman, start, "{{ params.id }}"]
+    after: [{ refresh: containers }, { refresh: container }]
+  stop:
+    label: Stop
+    icon: stop
+    style: danger
+    visible: "{{ data.container.State.Running == true }}"
+    run: [podman, stop, "{{ params.id }}"]
+    confirm:
+      title: "Stop this container?"
+      text: Whatever it serves goes offline until it is started again.
+    after: [{ refresh: containers }, { refresh: container }]
+  restart:
+    label: Restart
+    icon: restart
+    visible: "{{ data.container.State.Running == true }}"
+    run: [podman, restart, "{{ params.id }}"]
+    confirm:
+      title: "Restart this container?"
+      text: It is unavailable for a moment.
+    after: [{ refresh: containers }, { refresh: container }]
+  remove:
+    label: Remove
+    icon: trash
+    style: danger
+    visible: "{{ data.container.State.Running != true }}"
+    run: [podman, rm, "{{ params.id }}"]
+    confirm:
+      title: "Remove this container?"
+      text: The container is deleted. Its volumes are kept.
+      type_to_confirm: "{{ data.container.Name }}"
+    after: [{ refresh: containers }]
+
+screens:
+  main:
+    title: Containers
+    subtitle: "{{ data.containers | count() }} containers"
+    tabs:
+      - id: overview
+        title: Overview
+        sections:
+          - layout: { columns: 3 }
+            components:
+              - type: stat
+                label: Running
+                value: "{{ data.containers | where(row.State == 'running') | count() }}"
+                tone: success
+              - type: stat
+                label: Stopped
+                value: "{{ data.containers | where(row.State == 'exited' || row.State == 'stopped') | count() }}"
+                tone: muted
+              - type: stat
+                label: Other
+                value: "{{ data.containers | where(row.State != 'running' && row.State != 'exited' && row.State != 'stopped') | count() }}"
+                tone: warning
+      - id: running
+        title: Running
+        badge: "{{ data.containers | where(row.State == 'running') | count() }}"
+        sections:
+          - components:
+              - type: list
+                from: containers
+                where: "{{ row.State == 'running' }}"
+                search: true
+                empty: No container is running.
+                item:
+                  title: "{{ row.Names | join(', ') }}"
+                  subtitle: "{{ row.Image }}"
+                  trailing: "{{ row.Status }}"
+                  tone: success
+                on_tap: { screen: detail, params: { id: "{{ row.Id }}" } }
+      - id: all
+        title: All
+        sections:
+          - components:
+              - type: table
+                from: containers
+                search: true
+                columns:
+                  - { title: Name, value: "{{ row.Names | join(', ') }}" }
+                  - { title: State, value: "{{ row.State }}" }
+                  - { title: Image, value: "{{ row.Image }}" }
+                on_tap: { screen: detail, params: { id: "{{ row.Id }}" } }
+
+  detail:
+    params: [id]
+    docs: https://docs.podman.io/en/latest/markdown/podman-container.1.html
+    title: "{{ data.container.Name }}"
+    subtitle: "{{ data.container.ImageName }}"
+    actions: [start, stop, restart, remove]
+    tabs:
+      - id: status
+        title: Status
+        sections:
+          - layout: { columns: 2 }
+            components:
+              - type: stat
+                label: State
+                value: "{{ data.container.State.Status }}"
+                tone: "{{ data.container.State.Running == true ? 'success' : 'muted' }}"
+              - type: stat
+                label: Restarts
+                value: "{{ data.container.RestartCount }}"
+              - type: stat
+                label: Started
+                value: "{{ data.container.State.StartedAt | ago() }}"
+              - type: stat
+                label: PID
+                value: "{{ data.container.State.Pid }}"
+          - title: Details
+            collapsible: true
+            components:
+              - type: keyvalue
+                items:
+                  - { label: ID, value: "{{ data.container.Id }}", copy: true }
+                  - { label: Image, value: "{{ data.container.ImageName }}" }
+                  - { label: Restart policy, value: "{{ data.container.HostConfig.RestartPolicy.Name }}" }
+      - id: logs
+        title: Logs
+        sections:
+          - components:
+              - type: logs
+                from: logs
+                follow: true
+                search: true

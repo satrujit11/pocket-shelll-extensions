@@ -1,0 +1,50 @@
+name: process list, detail with logs, and control
+fakes:
+  pm2: |
+    case "$1" in
+      --version) echo "5.3.0" ;;
+      jlist) cat <<'EOF'
+    [
+     {"name":"api","pm_id":0,"monit":{"memory":52428800,"cpu":3},"pm2_env":{"status":"online","restart_time":1}},
+     {"name":"worker","pm_id":1,"monit":{"memory":0,"cpu":0},"pm2_env":{"status":"stopped","restart_time":4}},
+     {"name":"bad","pm_id":2,"monit":{"memory":0,"cpu":0},"pm2_env":{"status":"errored","restart_time":9}}
+    ]
+    EOF
+      ;;
+      logs) echo "api listening on 3000"; echo "request /health" ;;
+    esac
+checks:
+  - screen: main
+    contains: ['"3 processes"', '"api"', '50.0 M', 'errored']
+  - screen: detail
+    params: { name: worker }
+    contains: ['"stopped"']
+  - screen: detail
+    params: { name: api }
+    contains: ['"online"', 'api listening on 3000', 'request /health']
+    offers: [start, restart, stop, delete]
+  - name: restart is confirmed
+    action: restart
+    screen: detail
+    params: { name: api }
+    refused: confirmed
+  - name: restart runs pm2 restart
+    action: restart
+    screen: detail
+    params: { name: api }
+    confirmed: true
+    ran: ["pm2 restart api"]
+  - name: delete needs the name typed
+    action: delete
+    screen: detail
+    params: { name: api }
+    confirmed: true
+    confirm_text: wrong
+    refused: does not match
+  - name: delete with the right name
+    action: delete
+    screen: detail
+    params: { name: api }
+    confirmed: true
+    confirm_text: api
+    ran: ["pm2 delete api"]

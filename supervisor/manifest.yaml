@@ -1,0 +1,118 @@
+spec: pocketshell.ext/v0
+id: supervisor
+name: Supervisor
+description: "Programs managed by supervisord: state, start, stop, restart."
+icon: process
+category: processes
+version: 1.0.0
+author: Pocket Shell
+docs: http://supervisord.org/running.html#supervisorctl-command-line-options
+license: Apache-2.0
+
+detect:
+  binaries: [supervisorctl]
+
+permissions: [read-processes, control-processes, sudo]
+
+data:
+  programs:
+    run: [supervisorctl, status]
+    parse: regex
+    pattern: '^(?P<name>\S+)\s+(?P<state>RUNNING|STOPPED|STARTING|FATAL|BACKOFF|EXITED|STOPPING|UNKNOWN)\s*(?P<detail>.*)$'
+    refresh: 5s
+    privilege: sudo
+  program:
+    params: [name]
+    run: [supervisorctl, status, "{{ params.name }}"]
+    parse: regex
+    pattern: '^(?P<name>\S+)\s+(?P<state>RUNNING|STOPPED|STARTING|FATAL|BACKOFF|EXITED|STOPPING|UNKNOWN)\s*(?P<detail>.*)$'
+    refresh: 5s
+    privilege: sudo
+  logs:
+    params: [name]
+    run: [supervisorctl, tail, "{{ params.name }}"]
+    parse: lines
+    refresh: 5s
+    privilege: sudo
+
+actions:
+  start:
+    label: Start
+    icon: play
+    style: primary
+    visible: "{{ (data.program | first()).state != 'RUNNING' }}"
+    run: [supervisorctl, start, "{{ params.name }}"]
+    privilege: sudo
+  stop:
+    label: Stop
+    icon: stop
+    style: danger
+    visible: "{{ (data.program | first()).state == 'RUNNING' }}"
+    run: [supervisorctl, stop, "{{ params.name }}"]
+    privilege: sudo
+    confirm: { title: "Stop {{ params.name }}?", text: It stays stopped until you start it. }
+  restart:
+    label: Restart
+    icon: restart
+    run: [supervisorctl, restart, "{{ params.name }}"]
+    privilege: sudo
+    confirm: { title: "Restart {{ params.name }}?", text: It is unavailable for a moment. }
+
+screens:
+  main:
+    title: Supervisor
+    subtitle: "{{ data.programs | count() }} programs"
+    tabs:
+      - id: overview
+        title: Overview
+        sections:
+          - layout: { columns: 3 }
+            components:
+              - type: stat
+                label: Running
+                value: "{{ data.programs | where(row.state == 'RUNNING') | count() }}"
+                tone: success
+              - type: stat
+                label: Stopped
+                value: "{{ data.programs | where(row.state == 'STOPPED' || row.state == 'EXITED') | count() }}"
+                tone: muted
+              - type: stat
+                label: Failing
+                value: "{{ data.programs | where(row.state == 'FATAL' || row.state == 'BACKOFF') | count() }}"
+                tone: danger
+      - id: programs
+        title: Programs
+        sections:
+          - components:
+              - type: list
+                from: programs
+                search: true
+                sort: name
+                empty: Supervisor has no programs.
+                item:
+                  title: "{{ row.name }}"
+                  subtitle: "{{ row.detail }}"
+                  trailing: "{{ row.state }}"
+                  tone: "{{ row.state == 'RUNNING' ? 'success' : (row.state == 'FATAL' || row.state == 'BACKOFF' ? 'danger' : 'muted') }}"
+                on_tap: { screen: detail, params: { name: "{{ row.name }}" } }
+  detail:
+    params: [name]
+    title: "{{ params.name }}"
+    subtitle: "{{ (data.program | first()).state }}"
+    actions: [start, stop, restart]
+    tabs:
+      - id: status
+        title: Status
+        sections:
+          - components:
+              - type: stat
+                label: State
+                value: "{{ (data.program | first()).state }}"
+                detail: "{{ (data.program | first()).detail }}"
+      - id: logs
+        title: Output
+        sections:
+          - components:
+              - type: logs
+                from: logs
+                search: true

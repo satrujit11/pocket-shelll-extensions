@@ -1,0 +1,143 @@
+spec: pocketshell.ext/v0
+id: kubernetes
+name: Kubernetes
+description: "Pods and nodes through kubectl: status, live logs, delete a pod."
+icon: cloud
+category: containers
+version: 1.0.0
+author: Pocket Shell
+docs: https://kubernetes.io/docs/reference/kubectl/
+logo: https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/kubernetes/logo.svg
+license: Apache-2.0
+
+detect:
+  binaries: [kubectl]
+  version_args: [version, --client]
+
+permissions: [read-cluster, control-cluster]
+
+data:
+  pods:
+    run: [kubectl, get, pods, -A, -o, json]
+    parse: json
+    path: $.items
+    refresh: 10s
+    timeout: 15s
+  nodes:
+    run: [kubectl, get, nodes, -o, json]
+    parse: json
+    path: $.items
+    refresh: 30s
+    timeout: 15s
+  pod:
+    params: [ns, name]
+    run: [kubectl, get, pod, "{{ params.name }}", -n, "{{ params.ns }}", -o, json]
+    parse: json
+    path: $
+    refresh: 5s
+    timeout: 15s
+  logs:
+    params: [ns, name]
+    run: [kubectl, logs, "{{ params.name }}", -n, "{{ params.ns }}", --tail, "200", -f]
+    parse: lines
+    stream: true
+    merge_stderr: true
+
+actions:
+  delete-pod:
+    label: Delete pod
+    icon: trash
+    style: danger
+    run: [kubectl, delete, pod, "{{ params.name }}", -n, "{{ params.ns }}"]
+    confirm:
+      title: "Delete {{ params.name }}?"
+      text: Its controller will start a replacement if there is one.
+      type_to_confirm: "{{ params.name }}"
+
+screens:
+  main:
+    title: Kubernetes
+    subtitle: "{{ data.pods | count() }} pods"
+    tabs:
+      - id: overview
+        title: Overview
+        sections:
+          - layout: { columns: 3 }
+            components:
+              - type: stat
+                label: Running
+                value: "{{ data.pods | where(row.status.phase == 'Running') | count() }}"
+                tone: success
+              - type: stat
+                label: Pending
+                value: "{{ data.pods | where(row.status.phase == 'Pending') | count() }}"
+                tone: warning
+              - type: stat
+                label: Failed
+                value: "{{ data.pods | where(row.status.phase == 'Failed') | count() }}"
+                tone: danger
+      - id: pods
+        title: Pods
+        badge: "{{ data.pods | count() }}"
+        sections:
+          - components:
+              - type: list
+                from: pods
+                search: true
+                group_by: metadata.namespace
+                item:
+                  title: "{{ row.metadata.name }}"
+                  subtitle: "{{ row.metadata.namespace }}"
+                  trailing: "{{ row.status.phase }}"
+                  tone: "{{ row.status.phase == 'Running' ? 'success' : (row.status.phase == 'Pending' ? 'warning' : 'danger') }}"
+                on_tap: { screen: pod, params: { ns: "{{ row.metadata.namespace }}", name: "{{ row.metadata.name }}" } }
+      - id: nodes
+        title: Nodes
+        sections:
+          - components:
+              - type: list
+                from: nodes
+                item:
+                  title: "{{ row.metadata.name }}"
+                  subtitle: "{{ row.status.nodeInfo.kubeletVersion }}"
+                  trailing: "{{ (row.status.conditions | where(row.type == 'Ready') | first()).status == 'True' ? 'Ready' : 'Not ready' }}"
+                  tone: "{{ (row.status.conditions | where(row.type == 'Ready') | first()).status == 'True' ? 'success' : 'danger' }}"
+  pod:
+    params: [ns, name]
+    title: "{{ params.name }}"
+    subtitle: "{{ params.ns }}"
+    actions: [delete-pod]
+    tabs:
+      - id: status
+        title: Status
+        sections:
+          - layout: { columns: 2 }
+            components:
+              - type: stat
+                label: Phase
+                value: "{{ data.pod.status.phase }}"
+                tone: "{{ data.pod.status.phase == 'Running' ? 'success' : 'warning' }}"
+              - type: stat
+                label: Restarts
+                value: "{{ data.pod.status.containerStatuses[0].restartCount }}"
+              - type: stat
+                label: Started
+                value: "{{ data.pod.status.startTime | ago() }}"
+              - type: stat
+                label: Node
+                value: "{{ data.pod.spec.nodeName }}"
+          - title: Details
+            collapsible: true
+            components:
+              - type: keyvalue
+                items:
+                  - { label: Image, value: "{{ data.pod.spec.containers[0].image }}" }
+                  - { label: Pod IP, value: "{{ data.pod.status.podIP }}", copy: true }
+      - id: logs
+        title: Logs
+        sections:
+          - components:
+              - type: logs
+                from: logs
+                follow: true
+                search: true

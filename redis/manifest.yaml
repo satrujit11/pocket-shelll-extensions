@@ -1,0 +1,64 @@
+spec: pocketshell.ext/v0
+id: redis
+name: Redis
+description: "Server status, memory, clients and keys of a local Redis."
+icon: database
+category: databases
+version: 1.0.0
+author: Pocket Shell
+docs: https://redis.io/docs/latest/commands/info/
+logo: https://raw.githubusercontent.com/satrujit11/pocket-shell-extensions/main/redis/logo.svg
+license: Apache-2.0
+
+detect:
+  binaries: [redis-cli]
+  version_args: [--version]
+
+permissions: [read-redis, control-redis]
+
+data:
+  info:
+    run: [redis-cli, info]
+    parse: keyvalue
+    refresh: 5s
+    timeout: 5s
+
+actions:
+  save:
+    label: Save to disk
+    icon: add
+    run: [redis-cli, bgsave]
+    confirm: { title: "Save a snapshot now?", text: Redis forks and writes its data to disk in the background. }
+
+screens:
+  main:
+    title: Redis
+    subtitle: "{{ data.info.redis_version }}"
+    actions: [save]
+    tabs:
+      - id: overview
+        title: Overview
+        sections:
+          - layout: { columns: 2 }
+            components:
+              - type: stat
+                label: Uptime
+                value: "{{ data.info.uptime_in_seconds | duration() }}"
+              - type: stat
+                label: Clients
+                value: "{{ data.info.connected_clients }}"
+              - type: stat
+                label: Memory
+                value: "{{ data.info.used_memory | bytes() }}"
+              - type: stat
+                label: Commands/sec
+                value: "{{ data.info.instantaneous_ops_per_sec }}"
+          - title: Details
+            collapsible: true
+            components:
+              - type: keyvalue
+                items:
+                  - { label: Role, value: "{{ data.info.role }}" }
+                  - { label: Total commands, value: "{{ data.info.total_commands_processed }}" }
+                  - { label: Peak memory, value: "{{ data.info.used_memory_peak_human }}" }
+                  - { label: Keys (db0), value: "{{ data.info.db0 | default('no keys') }}" }
