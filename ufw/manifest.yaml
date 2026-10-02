@@ -4,7 +4,7 @@ name: Firewall (ufw)
 description: "Firewall status and rules: add, delete, enable and disable."
 icon: shield
 category: security
-version: 1.0.0
+version: 1.1.0
 author: Pocket Shell
 docs: https://manpages.ubuntu.com/manpages/noble/en/man8/ufw.8.html
 license: Apache-2.0

@@ -21,14 +21,14 @@
       "description": "Pods and nodes through kubectl: status, live logs, delete a pod.",
       "icon": "cloud",
       "category": "containers",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "Pocket Shell",
       "docs": "https://kubernetes.io/docs/reference/kubectl/",
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/kubernetes/logo.svg",
       "readme": "kubernetes/README.md",
       "path": "kubernetes/manifest.yaml",
-      "sha256": "7d13d7b8a610d116fe677af576ecc1dfd44cbc0a063fe883fe1caf63644118a9",
-      "signature": "wucRthHSo4J7O4LgfpDMIebWLVjPKp6ABKBSqDH4UcenKW5P1zQph3Iw9nmVoms+bl0NU299u4Lfu725YAiBCw=="
+      "sha256": "7ea8ccfdf55a9a21a1273145bb6ffcd51724f45096279e102a6fe0448a4656b2",
+      "signature": "k3WBKA1EgoKsVuQxWkHKLEpq+iWeiS+x8AiRHRt1siEyDtyUGIB0MPuxtdXbg65WXbL6BM6QBz52N4ccqEOoBw=="
     },
     {
       "id": "nginx",
@@ -36,14 +36,14 @@
       "description": "Web server status, enabled sites, config test, logs, reload and restart.",
       "icon": "web",
       "category": "web",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "Pocket Shell",
       "docs": "https://nginx.org/en/docs/",
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/nginx/logo.svg",
       "readme": "nginx/README.md",
       "path": "nginx/manifest.yaml",
-      "sha256": "5191bd70954ebc6feaa4623252ca5401af10cab26ba26e9ac279afb5909f3c7f",
-      "signature": "9x3Jo5oTwZkZSiVyeMGAskhkc4TGa/RlfKhTpC00BjEoOELcc8TJjoHQqIifEYln5i8j8dSU/Uox9GG/xoHRAA=="
+      "sha256": "e8ab5f2699283cc39f2aabe7840eb21fe6b71d2cea78c71bf0a4dfe7cc5d063c",
+      "signature": "weq3Owf1J5otJA8O+rxgRAJpyZawFXcPdyzGSZ6h+K7wQD/q/BTKDhe4WrptrQt0lGYRX7Nc7Z97UnmtNTw4CA=="
     },
     {
       "id": "pm2",
@@ -81,14 +81,14 @@
       "description": "Server status, memory, clients and keys of a local Redis.",
       "icon": "database",
       "category": "databases",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "Pocket Shell",
       "docs": "https://redis.io/docs/latest/commands/info/",
       "logo": "https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/redis/logo.svg",
       "readme": "redis/README.md",
       "path": "redis/manifest.yaml",
-      "sha256": "093de959ae7bd13c45b8f23b42aff6bd08c52fbbbaaea129dbb5a13ed0d1908c",
-      "signature": "l3x7kGdybp70zyROGqCiTVuw44ZxZ7qskum3l/3ynQljhLn3PQ7UjhC3tsD7F33ELoL4wKm5OgyWHkyo8dAGAw=="
+      "sha256": "aa4cce7769b54ffe2f6238fc77a6570f08a1386c0c539442d9b6e14a7570211b",
+      "signature": "FJ3Nh4I0E5rZgBpOxvv/nHFYhM6AfxWQu8m5H/T9ErHD6rIKVQEh4bXgNYjuph1zI3K+6U+XtMYCmwnIaB9fCw=="
     },
     {
       "id": "supervisor",
@@ -96,13 +96,13 @@
       "description": "Programs managed by supervisord: state, start, stop, restart.",
       "icon": "process",
       "category": "processes",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "Pocket Shell",
       "docs": "http://supervisord.org/running.html#supervisorctl-command-line-options",
       "readme": "supervisor/README.md",
       "path": "supervisor/manifest.yaml",
-      "sha256": "563ad8d730f4e5e7ad4da0038a63a4dd9203b30801f4bf469b152dcd2a69d724",
-      "signature": "rzD5KVdII7/aRaEr/V7ynrrimTln9mtGH96cnBRpEK6uLcqQeSwQFg7q/naaTxQnWM15zfsG1G4XppA51C9YCg=="
+      "sha256": "7580f448c06acb3af87a2307e87f15f32d5ba4469c29dcb4d3e72687f04330b9",
+      "signature": "sDbiMOYE1qJIRsc715MXARxLvjqhlsugMw7O1tsocuUAsdLDbDpUIUcEC6Ns2bErR2nhMkU8VoAE3XQpdUi2Dw=="
     },
     {
       "id": "systemd",
@@ -110,13 +110,13 @@
       "description": "systemd services: what runs, what failed, logs, start, stop and restart.",
       "icon": "server",
       "category": "system",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "Pocket Shell",
       "docs": "https://www.freedesktop.org/software/systemd/man/latest/systemctl.html",
       "readme": "systemd/README.md",
       "path": "systemd/manifest.yaml",
-      "sha256": "3454754dee89ccbdc00318dba19697972583a520d5937c5aff30fa551c68ce16",
-      "signature": "4UB7iQFLEkNGhymIG09Ub8Xs9yf8zBvobfiN/aeV7Nk3X/Q8h0FbzWWX0JMm+IK0mgNN6J0+T+QD1WpVDvZoBQ=="
+      "sha256": "6b5fa48baafe36bba79b1d7571498c3b53e46615c4b24ef315afe33b6b8574c6",
+      "signature": "42trJPOGlt6XdKm+OJ8WIgFrp2PThJfAR/QADFSzy5NGuSP9TkPBzd5guHEV1IZ61m6JUteazG7arcO/N8SFBQ=="
     },
     {
       "id": "ufw",
@@ -124,16 +124,16 @@
       "description": "Firewall status and rules: add, delete, enable and disable.",
       "icon": "shield",
       "category": "security",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "Pocket Shell",
       "docs": "https://manpages.ubuntu.com/manpages/noble/en/man8/ufw.8.html",
       "readme": "ufw/README.md",
       "path": "ufw/manifest.yaml",
-      "sha256": "9fe83f601d1522c86e0767b60bb9addfe10f2789c141a07e37aa0f05e7ccf932",
-      "signature": "+P7GrAwEfwGCiNrt/w4CT5J4Weq7i4fQ8r8X2J+J14aXz5bw4HyzFZFkviPFK+6bAvbStQT7OIDoBfUyla5KCA=="
+      "sha256": "f4233c89966459f0ef7fdd4533c17dee190d7b6b74f139fbe9e00f4c942dc524",
+      "signature": "KnCDRB/DWLTt03Gv8/XQeSdx9tHY2o4e7R7Cc4oLtXYP0Pe0sJs6gp74PMjY7ffIedBEIUvuiM5g1hTZbQHACQ=="
     }
   ],
   "name": "Pocket Shell extensions",
   "spec": "pocketshell.registry/v0",
-  "updated": "2026-10-02T05:46:27Z"
+  "updated": "2026-10-02T06:25:08Z"
 }

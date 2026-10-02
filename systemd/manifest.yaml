@@ -6,7 +6,7 @@ name: Services
 description: "systemd services: what runs, what failed, logs, start, stop and restart."
 icon: server
 category: system
-version: 1.0.0
+version: 1.1.0
 author: Pocket Shell
 docs: https://www.freedesktop.org/software/systemd/man/latest/systemctl.html
 license: Apache-2.0

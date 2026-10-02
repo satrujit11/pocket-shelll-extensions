@@ -6,7 +6,7 @@ name: Nginx
 description: "Web server status, enabled sites, config test, logs, reload and restart."
 icon: web
 category: web
-version: 1.0.0
+version: 1.1.0
 author: Pocket Shell
 docs: https://nginx.org/en/docs/
 logo: https://raw.githubusercontent.com/satrujit11/pocket-shelll-extensions/main/nginx/logo.svg

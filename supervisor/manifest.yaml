@@ -4,7 +4,7 @@ name: Supervisor
 description: "Programs managed by supervisord: state, start, stop, restart."
 icon: process
 category: processes
-version: 1.0.0
+version: 1.1.0
 author: Pocket Shell
 docs: http://supervisord.org/running.html#supervisorctl-command-line-options
 license: Apache-2.0
