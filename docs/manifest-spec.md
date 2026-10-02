@@ -173,7 +173,7 @@ re-resolves it:
           lines: { type: number, label: Lines, options: [100, 200, 500, 1000], default: 200 }
           env:   { type: toggle, label: Show environment variables, auth: true, default: false }
 
-Types: `select`, `toggle`, `text`, `number`. A state variable with `auth: true`
+Types: `select`, `toggle`, `text`, `number`. A `select` or `number` with `options` is drawn as one compact drop-down row (label left, choice right, options in the app's sheet); `toggle` as a switch; `text` as a field. A state variable with `auth: true`
 asks for the app's PIN or biometrics before it leaves its default. Put a control
 next to what it changes with `controls: [lines]` on any component, or draw
 several together with a `controls` component (`items: [env]`). `state.<name>` may
